@@ -9,9 +9,11 @@ import android.os.Parcelable;
 
 public class NotificationModel implements Parcelable{
 
+    private String group;
     private String userName;
     private String msg;
-    private String time;
+    private long time;
+    private int icon;
 
 
     public NotificationModel() {
@@ -20,7 +22,8 @@ public class NotificationModel implements Parcelable{
     protected NotificationModel(Parcel in) {
         userName = in.readString();
         msg = in.readString();
-        time = in.readString();
+        time = in.readLong();
+        icon = in.readInt();
     }
 
     public static final Creator<NotificationModel> CREATOR = new Creator<NotificationModel>() {
@@ -34,6 +37,23 @@ public class NotificationModel implements Parcelable{
             return new NotificationModel[size];
         }
     };
+
+
+    public String getGroup() {
+        return group;
+    }
+
+    public void setGroup(String group) {
+        this.group = group;
+    }
+
+    public int getIcon() {
+        return icon;
+    }
+
+    public void setIcon(int icon) {
+        this.icon = icon;
+    }
 
     public String getUserName() {
         return userName;
@@ -51,11 +71,11 @@ public class NotificationModel implements Parcelable{
         this.msg = msg;
     }
 
-    public String getTime() {
+    public long getTime() {
         return time;
     }
 
-    public void setTime(String time) {
+    public void setTime(long time) {
         this.time = time;
     }
 
@@ -68,6 +88,7 @@ public class NotificationModel implements Parcelable{
     public void writeToParcel(Parcel parcel, int i) {
         parcel.writeString(userName);
         parcel.writeString(msg);
-        parcel.writeString(time);
+        parcel.writeLong(time);
+        parcel.writeInt(icon);
     }
 }
