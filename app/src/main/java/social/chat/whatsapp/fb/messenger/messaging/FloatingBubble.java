@@ -1,25 +1,40 @@
 package social.chat.whatsapp.fb.messenger.messaging;
 
 import android.animation.ValueAnimator;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.Parcelable;
 import android.os.Vibrator;
 import android.support.annotation.Nullable;
+import android.support.v4.view.ViewPager;
+import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import org.greenrobot.eventbus.EventBus;
+
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+
+import de.hdodenhof.circleimageview.CircleImageView;
+
+import static android.R.attr.key;
 
 
 /**
@@ -53,15 +68,59 @@ public class FloatingBubble extends Service {
      */
     private int widthOfDev, heightOfDev;
 
+    /**
+     * arranges data in key values pair
+     */
+    private LinkedHashMap<String, ArrayList<NotificationModel>> listHashMap = new LinkedHashMap<>();
+
+    /**
+     * ViewPager Adapter
+     */
+    CustomPagerAdapter adapter;
+
+    /**
+     * contains list of keys
+     */
+    ArrayList<String> keys = new ArrayList<>();
+
+    /**
+     * previous location of chat head
+     */
+    private int click_x, click_y;
+
+    /**
+     * check if chat window is attached
+     */
+    boolean isWindowAttached = false;
+
+    /**
+     * bubble view
+     */
+
+    CircleImageView bubble;
+
+    /**
+     * update horizontal scrollview based on key value
+     */
+
+    boolean isKeyAvailable = false, updatePager = false;
+
 
     private WindowManager.LayoutParams imageWindowParams;
     private LinearLayout removeView, bubbleView;
     private LayoutInflater inflater;
     private ArrayList<NotificationModel> msgsData;
+    private LinearLayout chatLinear;
+    private ViewPager view_pager;
+    private RelativeLayout relative;
+    private HorizontalScrollView horizontal_scroller;
+    private LinearLayout horizontalLinearLayout;
+    private boolean resetAdapter;
 
 
     @Override
     public void onCreate() {
+
         super.onCreate();
 
 
@@ -77,7 +136,7 @@ public class FloatingBubble extends Service {
         addRemoveView();
         addBubbleView();
 
-        bubbleView.setOnTouchListener(new View.OnTouchListener() {
+        bubble.setOnTouchListener(new View.OnTouchListener() {
 
             boolean isLongclick = false, inBound = false;
             long time_start = 0, time_end = 0;
@@ -94,6 +153,7 @@ public class FloatingBubble extends Service {
             @Override
             public boolean onTouch(View view, MotionEvent event) {
 
+
                 WindowManager.LayoutParams layoutParams = (WindowManager.LayoutParams) bubbleView.getLayoutParams();
                 WindowManager.LayoutParams param_remove = (WindowManager.LayoutParams) removeView.getLayoutParams();
 
@@ -102,6 +162,7 @@ public class FloatingBubble extends Service {
                 int y_cord = (int) event.getRawY();
 
                 int x_cord_Destination, y_cord_Destination;
+
 
                 switch (event.getAction()) {
 
@@ -114,6 +175,7 @@ public class FloatingBubble extends Service {
 
                         x_init_margin = layoutParams.x;
                         y_init_margin = layoutParams.y;
+
 
                         return true;
 
@@ -150,7 +212,6 @@ public class FloatingBubble extends Service {
 
                         }
 
-
                         layoutParams.x = x_cord_Destination;
                         layoutParams.y = y_cord_Destination;
 
@@ -172,19 +233,36 @@ public class FloatingBubble extends Service {
                         int y_diff = y_cord - y_init_cord;
 
                         if (Math.abs(x_diff) < 20 && Math.abs(y_diff) < 20) {
+
                             time_end = System.currentTimeMillis();
                             if ((time_end - time_start) < 300) {
-                                Toast.makeText(FloatingBubble.this, "clicked", Toast.LENGTH_SHORT).show();
-                                animateView(layoutParams.x, 0, layoutParams.y, 0);
-                                startNewActivity();
-                            }
-                        } else {
 
+                                if (!isWindowAttached) {
+
+                                    animateView(layoutParams.x, 0, layoutParams.y, 0);
+                                    new Handler().postDelayed(new Runnable() {
+                                        @Override
+                                        public void run() {
+
+                                            addChatLayout();
+
+                                        }
+                                    }, 300);
+                                } else {
+
+                                    removeChatWindow();
+
+                                }
+
+                            }
+
+
+                        } else {
 
                             if (layoutParams.x < widthOfDev / 2)
                                 animateView(layoutParams.x, 0, layoutParams.y, layoutParams.y);
                             else
-                                animateView(layoutParams.x, (widthOfDev - bubbleView.getWidth()), layoutParams.y, layoutParams.y);
+                                animateView(layoutParams.x, (widthOfDev - bubble.getWidth()), layoutParams.y, layoutParams.y);
                         }
 
                         return true;
@@ -195,24 +273,28 @@ public class FloatingBubble extends Service {
         });
     }
 
+    private void addChatLayout() {
 
-    private void startNewActivity() {
 
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
+        isWindowAttached = true;
+        imageWindowParams = new WindowManager.LayoutParams(
+                WindowManager.LayoutParams.MATCH_PARENT,
+                WindowManager.LayoutParams.WRAP_CONTENT,
+                WindowManager.LayoutParams.TYPE_PHONE,
+                WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
+                PixelFormat.TRANSLUCENT);
 
-                Intent intent = new Intent(FloatingBubble.this, TransparentChat.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                intent.putParcelableArrayListExtra(Constants.msgs,msgsData);
-                startActivity(intent);
-            }
-        }, 300);
+
+        view_pager.setVisibility(View.VISIBLE);
+        relative.setVisibility(View.VISIBLE);
+        horizontal_scroller.setVisibility(View.VISIBLE);
+
+        windowManager.updateViewLayout(bubbleView, imageWindowParams);
 
     }
 
-    private void animateView(int startX, int endX, int startY, int endY) {
 
+    private void animateView(int startX, int endX, int startY, int endY) {
 
         ValueAnimator translateX = ValueAnimator.ofInt(startX, endX);
         ValueAnimator translateY = ValueAnimator.ofInt(startY, endY);
@@ -238,11 +320,7 @@ public class FloatingBubble extends Service {
         });
 
         translateY.setDuration(250).start();
-
-
     }
-
-
 
     private void updateViewLayout(LinearLayout bubbleView, int animateX, int animateY) {
 
@@ -257,6 +335,14 @@ public class FloatingBubble extends Service {
     private void addBubbleView() {
 
         bubbleView = (LinearLayout) inflater.inflate(R.layout.bubble_layout, null);
+        bubble = (CircleImageView) bubbleView.findViewById(R.id.bubble);
+
+        relative = (RelativeLayout) bubbleView.findViewById(R.id.rel);
+        horizontal_scroller = (HorizontalScrollView) bubbleView.findViewById(R.id.scroller);
+        view_pager = (ViewPager) bubbleView.findViewById(R.id.pager);
+        horizontalLinearLayout = (LinearLayout) bubbleView.findViewById(R.id.horizontalLinear);
+
+
 //        ImageView bubble = (ImageView) bubbleView.findViewById(R.id.bubble);
 //        bubble.setImageResource(R.mipmap.ic_launcher);
 
@@ -264,12 +350,92 @@ public class FloatingBubble extends Service {
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.TYPE_PHONE,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
+                        WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
                 PixelFormat.TRANSLUCENT);
+
         imageWindowParams.gravity = Gravity.TOP | Gravity.LEFT;
         imageWindowParams.x = 10;
         imageWindowParams.y = heightOfDev / 2;
+
         windowManager.addView(bubbleView, imageWindowParams);
+
+        horizontalLinearLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+
+            }
+        });
+
+//        for (int i = 0; i < horizontalLinearLayout.getChildCount(); i++) {
+//
+//            final int finalI = i;
+//
+//            horizontalLinearLayout.getChildAt(i).setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View view) {
+//
+//                    LinearLayout linearLayout = (LinearLayout) horizontalLinearLayout.getChildAt(finalI);
+//                    TextView textView = (TextView) linearLayout.findViewById(R.id.title);
+//
+//                    Toast.makeText(FloatingBubble.this, "clicked " + finalI, Toast.LENGTH_SHORT).show();
+//                }
+//            });
+//        }
+//
+
+        view_pager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+
+                horizontal_scroller.scrollTo(horizontalLinearLayout.getChildAt(position).getLeft(), 0);
+                horizontalLinearLayout.getChildAt(position).setBackgroundColor(Color.parseColor("#d3d3d3"));
+
+                for (int i = 0; i < horizontalLinearLayout.getChildCount(); i++) {
+
+                    if (i != position)
+                        horizontalLinearLayout.getChildAt(i).setBackgroundColor(Color.parseColor("#065E52"));
+                }
+
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
+
+    }
+
+    private void removeChatWindow() {
+
+        isWindowAttached = false;
+
+        horizontal_scroller.setVisibility(View.GONE);
+        relative.setVisibility(View.GONE);
+        view_pager.setVisibility(View.GONE);
+
+        imageWindowParams = new WindowManager.LayoutParams(
+                WindowManager.LayoutParams.WRAP_CONTENT,
+                WindowManager.LayoutParams.WRAP_CONTENT,
+                WindowManager.LayoutParams.TYPE_PHONE,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
+                        WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
+                PixelFormat.TRANSLUCENT);
+
+        imageWindowParams.gravity = Gravity.TOP | Gravity.LEFT;
+        imageWindowParams.x = 10;
+        imageWindowParams.y = heightOfDev / 2;
+        windowManager.updateViewLayout(bubbleView, imageWindowParams);
+
+
     }
 
     private void addRemoveView() {
@@ -281,11 +447,15 @@ public class FloatingBubble extends Service {
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.TYPE_PHONE,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
                 PixelFormat.TRANSLUCENT);
         paramRemove.gravity = Gravity.TOP | Gravity.LEFT;
+
+
         removeView.setVisibility(View.GONE);
         windowManager.addView(removeView, paramRemove);
+
+
     }
 
 
@@ -302,14 +472,192 @@ public class FloatingBubble extends Service {
         if (windowManager != null && bubbleView != null) {
             windowManager.removeViewImmediate(bubbleView);
             windowManager.removeView(removeView);
+
+            try {
+
+                windowManager.removeView(chatLinear);
+            } catch (Exception e) {
+
+            /* view not found */
+
+            }
+
         }
 
     }
 
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
 
-        msgsData = intent.getParcelableArrayListExtra(Constants.msgs);
+    @Override
+    public int onStartCommand(final Intent intent, int flags, int startId) {
+
+        if (intent != null && intent.getParcelableArrayListExtra(Constants.msgs) != null) {
+
+
+            Toast.makeText(this, "called", Toast.LENGTH_SHORT).show();
+
+            msgsData = intent.getParcelableArrayListExtra(Constants.msgs);
+//            Toast.makeText(this, "" + msgsData.size(), Toast.LENGTH_SHORT).show();
+
+            Toast.makeText(this, "else " + msgsData.get(msgsData.size() - 1).getUserName(), Toast.LENGTH_SHORT).show();
+
+            arrangeData();
+
+            for (String key : listHashMap.keySet()) {
+
+                keys.add(key);
+
+                LinearLayout headLinear = (LinearLayout) LayoutInflater.from(this).inflate(R.layout.scrolltext, null);
+                TextView tv = (TextView) headLinear.findViewById(R.id.title);
+                tv.setText(key);
+
+                for (int i = 0; i < horizontalLinearLayout.getChildCount(); i++) {
+
+                    LinearLayout linearLayout = (LinearLayout) horizontalLinearLayout.getChildAt(i);
+                    TextView textView = (TextView) linearLayout.findViewById(R.id.title);
+                    if (textView.getText().equals(key)) {
+                        isKeyAvailable = true;
+                        break;
+                    } else {
+                        isKeyAvailable = false;
+                    }
+
+                }
+
+                if (!isKeyAvailable) {
+                    horizontalLinearLayout.addView(headLinear);
+                }
+            }
+
+            horizontal_scroller.setHorizontalScrollBarEnabled(false);
+
+            for (int i = 0 ; i < horizontalLinearLayout.getChildCount() ; i++){
+
+                final int finalI = i;
+
+                horizontalLinearLayout.getChildAt(i).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+
+                        Toast.makeText(FloatingBubble.this, "clciked", Toast.LENGTH_SHORT).show();
+                        view_pager.setCurrentItem(finalI);
+                    }
+                });
+            }
+
+            RecyclerView recyclerview = null;
+            String key2 = null;
+
+            for (String key : listHashMap.keySet()) {
+
+                recyclerview = (RecyclerView) view_pager.findViewWithTag(key).findViewById(R.id.list);
+
+                if (recyclerview != null)
+                    ((ListAdapter) (recyclerview.getAdapter())).swap(listHashMap.get(key));
+                else {
+
+                    updatePager = true;
+                    break;
+                }
+
+//                    if (recyclerview == null) {
+//                        updatePager = true;
+//                        key2 = key;
+//                    adapter.updateView(key, listHashMap.get(key));
+//                        ((ListAdapter) (recyclerview.getAdapter())).swap(listHashMap.get(key));
+////                        break;
+//
+//                    } else
+
+//                if (recyclerview != null)
+//
+//                else {
+
+//                    int pos = view_pager.getCurrentItem();
+//                    adapter = new CustomPagerAdapter(this, listHashMap, keys);
+//                    view_pager.setAdapter(adapter);
+////                        adapter.updateView(key, listHashMap.get(key));
+//                    view_pager.setCurrentItem(pos);
+//                        view_pager.findViewById(R.id.list).setTag(key);
+//                        recyclerview = (RecyclerView) view_pager.findViewWithTag(key);
+//                        ((ListAdapter) (recyclerview.getAdapter())).swap(listHashMap.get(key));
+
+//                }
+//
+//                if (updatePager) {
+//                    adapter = new CustomPagerAdapter(this, listHashMap, keys);
+//                    view_pager.setAdapter(adapter);
+////                    ((ListAdapter) (recyclerview.getAdapter())).swap(listHashMap.get(key2));
+//
+//                    updatePager = false;
+//                }
+            }
+
+
+            if (updatePager) {
+
+                int pos = view_pager.getCurrentItem();
+                adapter = new CustomPagerAdapter(this, listHashMap, keys);
+                view_pager.setAdapter(adapter);
+//                        adapter.updateView(key, listHashMap.get(key));
+                view_pager.setCurrentItem(pos);
+
+                updatePager = false;
+            }
+
+            view_pager.findViewWithTag(R.id.send).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+
+                    Toast.makeText(FloatingBubble.this, ""+view_pager.getCurrentItem(), Toast.LENGTH_SHORT).show();
+
+                    PendingIntent pIntent = intent.getParcelableExtra("p");
+                    try {
+                        pIntent.send();
+                    } catch (PendingIntent.CanceledException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+            });
+
+        }
+
         return super.onStartCommand(intent, flags, startId);
     }
+
+
+    public void arrangeData() {
+
+        listHashMap.clear();
+
+        for (int i = 0; i < msgsData.size(); i++) {
+
+            if (msgsData.get(i).getGroup().equals("-null_123")) {
+
+                if (listHashMap.containsKey(msgsData.get(i).getUserName())) {
+                    listHashMap.get(msgsData.get(i).getUserName()).add(msgsData.get(i));
+
+                } else {
+                    ArrayList<NotificationModel> singleDataList = new ArrayList<>();
+                    singleDataList.add(msgsData.get(i));
+                    listHashMap.put(msgsData.get(i).getUserName(), singleDataList);
+                }
+
+            } else {
+
+                if (listHashMap.containsKey(msgsData.get(i).getGroup())) {
+                    listHashMap.get(msgsData.get(i).getGroup()).add(msgsData.get(i));
+
+                } else {
+                    ArrayList<NotificationModel> singleDataList = new ArrayList<>();
+                    singleDataList.add(msgsData.get(i));
+                    listHashMap.put(msgsData.get(i).getGroup(), singleDataList);
+                }
+
+            }
+
+        }
+    }
+
+
 }
