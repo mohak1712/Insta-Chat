@@ -1,5 +1,6 @@
 package social.chat.whatsapp.fb.messenger.messaging;
 
+import android.app.PendingIntent;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -14,6 +15,7 @@ public class NotificationModel implements Parcelable{
     private String msg;
     private long time;
     private int icon;
+    private String phnNo;
 
 
     public NotificationModel() {
@@ -24,6 +26,8 @@ public class NotificationModel implements Parcelable{
         msg = in.readString();
         time = in.readLong();
         icon = in.readInt();
+        group = in.readString();
+
     }
 
     public static final Creator<NotificationModel> CREATOR = new Creator<NotificationModel>() {
@@ -38,6 +42,13 @@ public class NotificationModel implements Parcelable{
         }
     };
 
+    public String getPhnNo() {
+        return phnNo;
+    }
+
+    public void setPhnNo(String phnNo) {
+        this.phnNo = phnNo;
+    }
 
     public String getGroup() {
         return group;
@@ -90,5 +101,6 @@ public class NotificationModel implements Parcelable{
         parcel.writeString(msg);
         parcel.writeLong(time);
         parcel.writeInt(icon);
+        parcel.writeString(group);
     }
 }
