@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
+import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 
 import org.greenrobot.eventbus.EventBus;
@@ -33,6 +34,8 @@ public class NotificationReader extends NotificationListenerService {
 
     private boolean calledOnce = false;
 
+    private int duplicateMsg;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -46,6 +49,10 @@ public class NotificationReader extends NotificationListenerService {
         if (!sbn.getPackageName().equals("com.whatsapp"))
             return;
 
+        duplicateMsg = -1;
+
+//        notificationCleared = false;
+
         Log.d("Lines", "called ji");
         Bundle extras = sbn.getNotification().extras;
         CharSequence[] lines = extras.getCharSequenceArray(Notification.EXTRA_TEXT_LINES);
@@ -58,69 +65,69 @@ public class NotificationReader extends NotificationListenerService {
             if (title == null)
                 return;
 
-            Log.d("Lines", "title " + title + " text " + text);
-
-            for (CharSequence k : lines)
-                Log.d("Lines", "Char " + k);
+//            Log.d("Lines", "title " + title + " text " + text);
+//
+//            for (CharSequence k : lines)
+//                Log.d("Lines", "Char " + k);
 
             if (title.equals("WhatsApp")) {
 
                 Log.d("Lines", "mul");
 
-                if (msgs.size() >= 7) {
+//                if (msgs.size() >= 7) {
+//
+//                    Log.d("Lines", "More than = 7");
+//
+////                    if (lines.length == 7)
+////                        addToList(lines, lines.length - 1, sbn, extras);
+////                    else
+//                        addWithDuplicateCheck(lines, sbn, extras);
+//
+//                } else {
 
-                    Log.d("Lines", "More than = 7");
-
-                    if (lines.length == 7)
-                        addToList(lines, lines.length - 1, sbn, extras);
-                    else
-                        for (int i = 0; i < lines.length; i++)
-                            addToList(lines, i, sbn, extras);
+                Log.d("Lines", "Less than 7");
 
 
-                } else {
-
-                    Log.d("Lines", "Less than 7");
-
-                    if (msgs.size() > lines.length)
-                        for (int i = 0; i < lines.length; i++)
-                            addToList(lines, i, sbn, extras);
-                    else if (msgs.size() < lines.length)
-                        for (int i = msgs.size(); i < lines.length; i++)
-                            addToList(lines, i, sbn, extras);
-                    else
-                        addToList(lines, lines.length - 1, sbn, extras);
-
-                }
+                if (msgs.size() < lines.length)
+                    for (int i = msgs.size(); i < lines.length; i++)
+                        addToList(lines, i, sbn, extras);
+//                if (msgs.size() >= lines.length)
+                else if (lines.length == 7)
+                    addToList(lines, lines.length - 1, sbn, extras);
+                else
+                    addWithDuplicateCheck(lines, sbn, extras);
+//                    else
+//                        addToList(lines, lines.length - 1, sbn, extras);
 
             } else {
 
-                Log.d("Lines", "single");
+//                Log.d("Lines", "single");
+//
+//                if (msgs.size() >= 7) {
+//
+//                    Log.d("Lines", "More than = 7 " + lines[lines.length - 1]);
+////
+////                    if (lines.length == 7)
+////                        addToList2(lines, lines.length - 1, title, sbn);
+////                    else
+//                        addWithDuplicateCheck2(lines, title, sbn);
+//                } else {
 
-                if (msgs.size() >= 7) {
+                Log.d("Lines", "Less than 7 lol");
 
-                    Log.d("Lines", "More than = 7 " + lines[lines.length - 1]);
 
-                    if (lines.length == 7)
-                        addToList2(lines, lines.length - 1, title, sbn);
-                    else
-                        for (int i = 0; i < lines.length; i++)
-                            addToList2(lines, i, title, sbn);
+                if (msgs.size() < lines.length)
+                    for (int i = msgs.size(); i < lines.length; i++)
+                        addToList2(lines, i, title, sbn);
+//                if (msgs.size() > lines.length) {
+                else if (lines.length == 7)
+                    addToList2(lines, lines.length - 1, title, sbn);
+                else
+                    addWithDuplicateCheck2(lines, title, sbn);
+//                    else
+//                        addToList2(lines, lines.length - 1, title, sbn);
 
-                } else {
-
-                    Log.d("Lines", "Less than 7 lol");
-
-                    if (msgs.size() > lines.length)
-                        for (int i = 0; i < lines.length; i++)
-                            addToList2(lines, i, title, sbn);
-                    else if (msgs.size() < lines.length)
-                        for (int i = msgs.size(); i < lines.length; i++)
-                            addToList2(lines, i, title, sbn);
-                    else
-                        addToList2(lines, lines.length - 1, title, sbn);
-
-                }
+//                }
 
             }
 
@@ -130,13 +137,64 @@ public class NotificationReader extends NotificationListenerService {
                 return;
 
             calledOnce = true;
+//            NotificationModel model = msgs.get(msgs.size() - 1);
+
             addSingleMessage(extras, lines, sbn);
 
         }
 
+//        Log.d("Lines", " dc " + sbn.getNotification().contentIntent.getIntentSender().toString()+ " " + sbn.getNotification().fullScreenIntent.getIntentSender().toString());
         Intent intent = new Intent(Constants.action);
+        intent.putExtra("p",sbn.getNotification().contentIntent);
         intent.putParcelableArrayListExtra(Constants.msgs, msgs);
         sendBroadcast(intent);
+
+    }
+
+    private void addWithDuplicateCheck(CharSequence[] lines, StatusBarNotification sbn, Bundle extras) {
+
+        NotificationModel model = msgs.get(msgs.size() - 1);
+
+        for (int i = 0; i < lines.length; i++) {
+
+            msgBifercator = lines[i].toString().split(":");
+            if (model.getGroup().equals("-null_123") && model.getUserName().equals(msgBifercator[0].trim()) && model.getMsg().equals(msgBifercator[1].trim())) {
+
+                duplicateMsg = i;
+                break;
+
+            } else if (model.getGroup().equals(msgBifercator[0].split("@")[1].trim()) && model.getUserName().equals(msgBifercator[0].split("@")[0].trim())
+                    && model.getMsg().equals(msgBifercator[1].trim())) {
+
+                duplicateMsg = i;
+                break;
+
+            }
+        }
+
+        for (int i = duplicateMsg + 1; i < lines.length; i++) {
+
+            addToList(lines, i, sbn, extras);
+        }
+
+    }
+
+    private void addWithDuplicateCheck2(CharSequence[] lines, String title, StatusBarNotification sbn) {
+
+        NotificationModel model = msgs.get(msgs.size() - 1);
+
+        for (int i = 0; i < lines.length; i++) {
+
+            if (model.getMsg().equals(lines[i].toString())) {
+                duplicateMsg = i;
+                break;
+            }
+
+        }
+
+        for (int i = duplicateMsg + 1; i < lines.length; i++) {
+            addToList2(lines, i, title, sbn);
+        }
 
     }
 
@@ -173,6 +231,7 @@ public class NotificationReader extends NotificationListenerService {
             }
 
         }
+
 
         Log.d("Lines", "else called");
     }
@@ -221,6 +280,7 @@ public class NotificationReader extends NotificationListenerService {
     @Override
     public void onNotificationRemoved(StatusBarNotification sbn) {
         super.onNotificationRemoved(sbn);
+        Log.d("Lines", "Notification Cleared");
 
     }
 
