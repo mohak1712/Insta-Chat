@@ -1,21 +1,25 @@
 package social.chat.whatsapp.fb.messenger.messaging;
 
 import android.animation.ValueAnimator;
+import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Vibrator;
 import android.support.annotation.Nullable;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.RemoteInput;
 import android.support.v4.view.ViewPager;
+
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -27,14 +31,12 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.greenrobot.eventbus.EventBus;
-
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
-
-import static android.R.attr.key;
 
 
 /**
@@ -103,7 +105,7 @@ public class FloatingBubble extends Service {
      * update horizontal scrollview based on key value
      */
 
-    boolean isKeyAvailable = false, updatePager = false;
+    boolean isKeyAvailable = false;
 
 
     private WindowManager.LayoutParams imageWindowParams;
@@ -115,14 +117,17 @@ public class FloatingBubble extends Service {
     private RelativeLayout relative;
     private HorizontalScrollView horizontal_scroller;
     private LinearLayout horizontalLinearLayout;
-    private boolean resetAdapter;
+    private NotificationWear notificationWear;
 
+
+    public FloatingBubble() {
+
+    }
 
     @Override
     public void onCreate() {
 
         super.onCreate();
-
 
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
@@ -350,8 +355,7 @@ public class FloatingBubble extends Service {
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.TYPE_PHONE,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
-                        WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
+                WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                 PixelFormat.TRANSLUCENT);
 
         imageWindowParams.gravity = Gravity.TOP | Gravity.LEFT;
@@ -426,8 +430,7 @@ public class FloatingBubble extends Service {
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.TYPE_PHONE,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
-                        WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
+                WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                 PixelFormat.TRANSLUCENT);
 
         imageWindowParams.gravity = Gravity.TOP | Gravity.LEFT;
@@ -447,7 +450,7 @@ public class FloatingBubble extends Service {
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.TYPE_PHONE,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
+                WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                 PixelFormat.TRANSLUCENT);
         paramRemove.gravity = Gravity.TOP | Gravity.LEFT;
 
@@ -492,17 +495,15 @@ public class FloatingBubble extends Service {
 
         if (intent != null && intent.getParcelableArrayListExtra(Constants.msgs) != null) {
 
-
             Toast.makeText(this, "called", Toast.LENGTH_SHORT).show();
 
             msgsData = intent.getParcelableArrayListExtra(Constants.msgs);
-//            Toast.makeText(this, "" + msgsData.size(), Toast.LENGTH_SHORT).show();
-
-            Toast.makeText(this, "else " + msgsData.get(msgsData.size() - 1).getUserName(), Toast.LENGTH_SHORT).show();
 
             arrangeData();
 
+            keys.clear();
             for (String key : listHashMap.keySet()) {
+
 
                 keys.add(key);
 
@@ -530,7 +531,8 @@ public class FloatingBubble extends Service {
 
             horizontal_scroller.setHorizontalScrollBarEnabled(false);
 
-            for (int i = 0 ; i < horizontalLinearLayout.getChildCount() ; i++){
+
+            for (int i = 0; i < horizontalLinearLayout.getChildCount(); i++) {
 
                 final int finalI = i;
 
@@ -538,93 +540,66 @@ public class FloatingBubble extends Service {
                     @Override
                     public void onClick(View view) {
 
-                        Toast.makeText(FloatingBubble.this, "clciked", Toast.LENGTH_SHORT).show();
                         view_pager.setCurrentItem(finalI);
                     }
                 });
             }
 
-            RecyclerView recyclerview = null;
-            String key2 = null;
-
-            for (String key : listHashMap.keySet()) {
-
-                recyclerview = (RecyclerView) view_pager.findViewWithTag(key).findViewById(R.id.list);
-
-                if (recyclerview != null)
-                    ((ListAdapter) (recyclerview.getAdapter())).swap(listHashMap.get(key));
-                else {
-
-                    updatePager = true;
-                    break;
-                }
-
-//                    if (recyclerview == null) {
-//                        updatePager = true;
-//                        key2 = key;
-//                    adapter.updateView(key, listHashMap.get(key));
-//                        ((ListAdapter) (recyclerview.getAdapter())).swap(listHashMap.get(key));
-////                        break;
-//
-//                    } else
-
-//                if (recyclerview != null)
-//
-//                else {
-
-//                    int pos = view_pager.getCurrentItem();
-//                    adapter = new CustomPagerAdapter(this, listHashMap, keys);
-//                    view_pager.setAdapter(adapter);
-////                        adapter.updateView(key, listHashMap.get(key));
-//                    view_pager.setCurrentItem(pos);
-//                        view_pager.findViewById(R.id.list).setTag(key);
-//                        recyclerview = (RecyclerView) view_pager.findViewWithTag(key);
-//                        ((ListAdapter) (recyclerview.getAdapter())).swap(listHashMap.get(key));
-
-//                }
-//
-//                if (updatePager) {
-//                    adapter = new CustomPagerAdapter(this, listHashMap, keys);
-//                    view_pager.setAdapter(adapter);
-////                    ((ListAdapter) (recyclerview.getAdapter())).swap(listHashMap.get(key2));
-//
-//                    updatePager = false;
-//                }
-            }
+            int pos = view_pager.getCurrentItem();
+            adapter = new CustomPagerAdapter(this, listHashMap, keys);
+            view_pager.setAdapter(adapter);
+            view_pager.setCurrentItem(pos);
 
 
-            if (updatePager) {
-
-                int pos = view_pager.getCurrentItem();
-                adapter = new CustomPagerAdapter(this, listHashMap, keys);
-                view_pager.setAdapter(adapter);
-//                        adapter.updateView(key, listHashMap.get(key));
-                view_pager.setCurrentItem(pos);
-
-                updatePager = false;
-            }
-
-            view_pager.findViewWithTag(R.id.send).setOnClickListener(new View.OnClickListener() {
+            adapter.setItemClickListner(new CustomPagerAdapter.Clicked() {
                 @Override
-                public void onClick(View view) {
+                public void itemClicked(int pos, String message) {
 
-                    Toast.makeText(FloatingBubble.this, ""+view_pager.getCurrentItem(), Toast.LENGTH_SHORT).show();
+                    NotificationWear notificationWear = NotificationReader.getWear();
 
-                    PendingIntent pIntent = intent.getParcelableExtra("p");
+                    RemoteInput[] remoteInputs = new RemoteInput[notificationWear.remoteInputs.size()];
+                    Intent localIntent = new Intent();
+                    Bundle localBundle = notificationWear.bundle;
+
+                    localBundle.putCharSequence(notificationWear.remoteInputs.get(pos).getResultKey(), message);
+
+                    int i = 0;
+
+                    for (RemoteInput remoteIn : notificationWear.remoteInputs) {
+                        remoteInputs[i] = remoteIn;
+                        localBundle.putCharSequence(remoteInputs[i].getResultKey(), message);
+                        i++;
+                    }
+
+                    RemoteInput.addResultsToIntent(remoteInputs, localIntent, localBundle);
                     try {
-                        pIntent.send();
+                        notificationWear.pendingIntent.get(pos).send(FloatingBubble.this, 0, localIntent);
+
+                        ListAdapter adapter = (ListAdapter) ((RecyclerView) view_pager.findViewWithTag(pos)).getAdapter();
+
+//                        NotificationModel model = new NotificationModel();
+//                        model.setGroup("-null_123");
+//                        model.setMsg(message);
+//                        model.setTime(System.currentTimeMillis());
+//
+//
+//                        ArrayList<NotificationModel> data2 = listHashMap.get(keys.get(pos));
+//                        data2.add(model);
+//
+//                        adapter.swap(data2);
+
                     } catch (PendingIntent.CanceledException e) {
-                        e.printStackTrace();
+
                     }
 
                 }
             });
 
+
         }
 
         return super.onStartCommand(intent, flags, startId);
     }
-
 
     public void arrangeData() {
 
