@@ -1,10 +1,13 @@
 package social.chat.whatsapp.fb.messenger.messaging;
 
+import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.os.Bundle;
@@ -20,6 +23,7 @@ import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -30,6 +34,9 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -73,7 +80,7 @@ public class FloatingBubble extends Service {
     /**
      * arranges data in key values pair
      */
-    private LinkedHashMap<String, ArrayList<NotificationModel>> listHashMap = new LinkedHashMap<>();
+    private LinkedHashMap<String, ArrayList<Object>> listHashMap;
 
     /**
      * ViewPager Adapter
@@ -102,11 +109,11 @@ public class FloatingBubble extends Service {
     CircleImageView bubble;
 
     /**
-     * update horizontal scrollview based on key value
+     * store user reply to chat
      */
+    ArrayList<reply> replyData;
 
-    boolean isKeyAvailable = false;
-
+    private NotificationWear notificationWear;
 
     private WindowManager.LayoutParams imageWindowParams;
     private LinearLayout removeView, bubbleView;
@@ -117,17 +124,19 @@ public class FloatingBubble extends Service {
     private RelativeLayout relative;
     private HorizontalScrollView horizontal_scroller;
     private LinearLayout horizontalLinearLayout;
-    private NotificationWear notificationWear;
 
-
-    public FloatingBubble() {
-
-    }
 
     @Override
     public void onCreate() {
 
         super.onCreate();
+
+        Log.d("Lines", "Service created");
+
+        EventBus.getDefault().register(this);
+
+        listHashMap = new LinkedHashMap<>();
+        replyData = new ArrayList<>();
 
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
@@ -346,10 +355,8 @@ public class FloatingBubble extends Service {
         horizontal_scroller = (HorizontalScrollView) bubbleView.findViewById(R.id.scroller);
         view_pager = (ViewPager) bubbleView.findViewById(R.id.pager);
         horizontalLinearLayout = (LinearLayout) bubbleView.findViewById(R.id.horizontalLinear);
+        chatLinear = (LinearLayout) bubbleView.findViewById(R.id.mainLinear);
 
-
-//        ImageView bubble = (ImageView) bubbleView.findViewById(R.id.bubble);
-//        bubble.setImageResource(R.mipmap.ic_launcher);
 
         imageWindowParams = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.WRAP_CONTENT,
@@ -362,32 +369,8 @@ public class FloatingBubble extends Service {
         imageWindowParams.x = 10;
         imageWindowParams.y = heightOfDev / 2;
 
+
         windowManager.addView(bubbleView, imageWindowParams);
-
-        horizontalLinearLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-
-            }
-        });
-
-//        for (int i = 0; i < horizontalLinearLayout.getChildCount(); i++) {
-//
-//            final int finalI = i;
-//
-//            horizontalLinearLayout.getChildAt(i).setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View view) {
-//
-//                    LinearLayout linearLayout = (LinearLayout) horizontalLinearLayout.getChildAt(finalI);
-//                    TextView textView = (TextView) linearLayout.findViewById(R.id.title);
-//
-//                    Toast.makeText(FloatingBubble.this, "clicked " + finalI, Toast.LENGTH_SHORT).show();
-//                }
-//            });
-//        }
-//
 
         view_pager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
@@ -416,6 +399,7 @@ public class FloatingBubble extends Service {
             }
         });
 
+
     }
 
     private void removeChatWindow() {
@@ -436,9 +420,16 @@ public class FloatingBubble extends Service {
         imageWindowParams.gravity = Gravity.TOP | Gravity.LEFT;
         imageWindowParams.x = 10;
         imageWindowParams.y = heightOfDev / 2;
+
         windowManager.updateViewLayout(bubbleView, imageWindowParams);
 
 
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        Toast.makeText(this, "" + newConfig.orientation, Toast.LENGTH_SHORT).show();
     }
 
     private void addRemoveView() {
@@ -454,10 +445,8 @@ public class FloatingBubble extends Service {
                 PixelFormat.TRANSLUCENT);
         paramRemove.gravity = Gravity.TOP | Gravity.LEFT;
 
-
         removeView.setVisibility(View.GONE);
         windowManager.addView(removeView, paramRemove);
-
 
     }
 
@@ -473,7 +462,7 @@ public class FloatingBubble extends Service {
         super.onDestroy();
 
         if (windowManager != null && bubbleView != null) {
-            windowManager.removeViewImmediate(bubbleView);
+            windowManager.removeView(bubbleView);
             windowManager.removeView(removeView);
 
             try {
@@ -487,6 +476,9 @@ public class FloatingBubble extends Service {
 
         }
 
+
+        EventBus.getDefault().unregister(this);
+
     }
 
 
@@ -495,15 +487,19 @@ public class FloatingBubble extends Service {
 
         if (intent != null && intent.getParcelableArrayListExtra(Constants.msgs) != null) {
 
-            Toast.makeText(this, "called", Toast.LENGTH_SHORT).show();
-
+            Toast.makeText(this, "called service", Toast.LENGTH_SHORT).show();
             msgsData = intent.getParcelableArrayListExtra(Constants.msgs);
+
+//            for (int i = 0; i < msgsData.size(); i++)
+//                Toast.makeText(this, "" + msgsData.get(i).getMsg(), Toast.LENGTH_SHORT).show();
+
 
             arrangeData();
 
             keys.clear();
-            for (String key : listHashMap.keySet()) {
+            horizontalLinearLayout.removeAllViews();
 
+            for (String key : listHashMap.keySet()) {
 
                 keys.add(key);
 
@@ -511,26 +507,13 @@ public class FloatingBubble extends Service {
                 TextView tv = (TextView) headLinear.findViewById(R.id.title);
                 tv.setText(key);
 
-                for (int i = 0; i < horizontalLinearLayout.getChildCount(); i++) {
+                horizontalLinearLayout.addView(headLinear);
 
-                    LinearLayout linearLayout = (LinearLayout) horizontalLinearLayout.getChildAt(i);
-                    TextView textView = (TextView) linearLayout.findViewById(R.id.title);
-                    if (textView.getText().equals(key)) {
-                        isKeyAvailable = true;
-                        break;
-                    } else {
-                        isKeyAvailable = false;
-                    }
-
-                }
-
-                if (!isKeyAvailable) {
-                    horizontalLinearLayout.addView(headLinear);
-                }
             }
 
             horizontal_scroller.setHorizontalScrollBarEnabled(false);
 
+            setAdapter();
 
             for (int i = 0; i < horizontalLinearLayout.getChildCount(); i++) {
 
@@ -545,23 +528,16 @@ public class FloatingBubble extends Service {
                 });
             }
 
-            int pos = view_pager.getCurrentItem();
-            adapter = new CustomPagerAdapter(this, listHashMap, keys);
-            view_pager.setAdapter(adapter);
-            view_pager.setCurrentItem(pos);
-
 
             adapter.setItemClickListner(new CustomPagerAdapter.Clicked() {
                 @Override
                 public void itemClicked(int pos, String message) {
 
-                    NotificationWear notificationWear = NotificationReader.getWear();
+                    EventBus.getDefault().post(new postEvent());
 
                     RemoteInput[] remoteInputs = new RemoteInput[notificationWear.remoteInputs.size()];
                     Intent localIntent = new Intent();
                     Bundle localBundle = notificationWear.bundle;
-
-                    localBundle.putCharSequence(notificationWear.remoteInputs.get(pos).getResultKey(), message);
 
                     int i = 0;
 
@@ -573,20 +549,33 @@ public class FloatingBubble extends Service {
 
                     RemoteInput.addResultsToIntent(remoteInputs, localIntent, localBundle);
                     try {
-                        notificationWear.pendingIntent.get(pos).send(FloatingBubble.this, 0, localIntent);
 
-                        ListAdapter adapter = (ListAdapter) ((RecyclerView) view_pager.findViewWithTag(pos)).getAdapter();
+                        if (remoteInputs[pos].getLabel().equals("Reply to " + keys.get(pos)))
+                            notificationWear.pendingIntent.get(pos).send(FloatingBubble.this, 0, localIntent);
+                        else {
 
-//                        NotificationModel model = new NotificationModel();
-//                        model.setGroup("-null_123");
-//                        model.setMsg(message);
-//                        model.setTime(System.currentTimeMillis());
-//
-//
-//                        ArrayList<NotificationModel> data2 = listHashMap.get(keys.get(pos));
-//                        data2.add(model);
-//
-//                        adapter.swap(data2);
+                            Toast.makeText(FloatingBubble.this, "else remote", Toast.LENGTH_SHORT).show();
+                            for (int x = 0; x < remoteInputs.length; x++) {
+                                if (remoteInputs[x].getLabel().equals("Reply to " + keys.get(pos))) {
+                                    notificationWear.pendingIntent.get(x).send(FloatingBubble.this, 0, localIntent);
+                                    break;
+                                }
+
+                            }
+
+                        }
+
+                        reply messageReply = new reply();
+                        messageReply.setMessage(message);
+                        messageReply.setKey(keys.get(pos));
+                        messageReply.setPos(listHashMap.get(keys.get(pos)).size());
+                        messageReply.setTime(System.currentTimeMillis());
+
+                        replyData.add(messageReply);
+
+                        arrangeData();
+                        setAdapter();
+
 
                     } catch (PendingIntent.CanceledException e) {
 
@@ -595,11 +584,19 @@ public class FloatingBubble extends Service {
                 }
             });
 
-
         }
+
 
         return super.onStartCommand(intent, flags, startId);
     }
+
+
+    @Subscribe
+    public void getnotificationWear(NotificationWear wear) {
+
+        notificationWear = wear;
+    }
+
 
     public void arrangeData() {
 
@@ -613,7 +610,8 @@ public class FloatingBubble extends Service {
                     listHashMap.get(msgsData.get(i).getUserName()).add(msgsData.get(i));
 
                 } else {
-                    ArrayList<NotificationModel> singleDataList = new ArrayList<>();
+
+                    ArrayList<Object> singleDataList = new ArrayList<>();
                     singleDataList.add(msgsData.get(i));
                     listHashMap.put(msgsData.get(i).getUserName(), singleDataList);
                 }
@@ -624,15 +622,31 @@ public class FloatingBubble extends Service {
                     listHashMap.get(msgsData.get(i).getGroup()).add(msgsData.get(i));
 
                 } else {
-                    ArrayList<NotificationModel> singleDataList = new ArrayList<>();
+                    ArrayList<Object> singleDataList = new ArrayList<>();
                     singleDataList.add(msgsData.get(i));
                     listHashMap.put(msgsData.get(i).getGroup(), singleDataList);
                 }
 
             }
 
+            for (int j = 0; j < replyData.size(); j++)
+                if (listHashMap.containsKey(replyData.get(j).getKey())) {
+
+                    if (replyData.get(j).getPos() == listHashMap.get(replyData.get(j).getKey()).size())
+                        listHashMap.get(replyData.get(j).getKey()).add(replyData.get(j));
+                }
+
         }
+
+
     }
 
+    void setAdapter() {
+
+        int pos = view_pager.getCurrentItem();
+        adapter = new CustomPagerAdapter(this, listHashMap, keys);
+        view_pager.setAdapter(adapter);
+        view_pager.setCurrentItem(pos);
+    }
 
 }
