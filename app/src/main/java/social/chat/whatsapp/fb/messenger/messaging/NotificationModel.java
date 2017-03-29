@@ -1,6 +1,7 @@
 package social.chat.whatsapp.fb.messenger.messaging;
 
 import android.app.PendingIntent;
+import android.graphics.Bitmap;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -8,26 +9,31 @@ import android.os.Parcelable;
  * Created by mohak on 2/3/17.
  */
 
-public class NotificationModel implements Parcelable{
+public class NotificationModel implements Parcelable {
 
     private String group;
     private String userName;
     private String msg;
     private long time;
-    private int icon;
-    private String phnNo;
 
 
     public NotificationModel() {
     }
 
+
     protected NotificationModel(Parcel in) {
+        group = in.readString();
         userName = in.readString();
         msg = in.readString();
         time = in.readLong();
-        icon = in.readInt();
-        group = in.readString();
+    }
 
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(group);
+        dest.writeString(userName);
+        dest.writeString(msg);
+        dest.writeLong(time);
     }
 
     public static final Creator<NotificationModel> CREATOR = new Creator<NotificationModel>() {
@@ -42,14 +48,6 @@ public class NotificationModel implements Parcelable{
         }
     };
 
-    public String getPhnNo() {
-        return phnNo;
-    }
-
-    public void setPhnNo(String phnNo) {
-        this.phnNo = phnNo;
-    }
-
     public String getGroup() {
         return group;
     }
@@ -58,13 +56,6 @@ public class NotificationModel implements Parcelable{
         this.group = group;
     }
 
-    public int getIcon() {
-        return icon;
-    }
-
-    public void setIcon(int icon) {
-        this.icon = icon;
-    }
 
     public String getUserName() {
         return userName;
@@ -94,13 +85,6 @@ public class NotificationModel implements Parcelable{
     public int describeContents() {
         return 0;
     }
-
-    @Override
-    public void writeToParcel(Parcel parcel, int i) {
-        parcel.writeString(userName);
-        parcel.writeString(msg);
-        parcel.writeLong(time);
-        parcel.writeInt(icon);
-        parcel.writeString(group);
-    }
 }
+
+
