@@ -41,16 +41,14 @@ import org.greenrobot.eventbus.Subscribe;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
-import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
-
 
 /**
  * Created by mohak on 22/1/17.
  */
 
-public class FloatingBubble extends Service {
+public class FloatingBubble extends Service implements CustomPagerAdapter.Clicked {
 
     /**
      * window manager
@@ -490,10 +488,6 @@ public class FloatingBubble extends Service {
             Toast.makeText(this, "called service", Toast.LENGTH_SHORT).show();
             msgsData = intent.getParcelableArrayListExtra(Constants.msgs);
 
-//            for (int i = 0; i < msgsData.size(); i++)
-//                Toast.makeText(this, "" + msgsData.get(i).getMsg(), Toast.LENGTH_SHORT).show();
-
-
             arrangeData();
 
             keys.clear();
@@ -501,6 +495,7 @@ public class FloatingBubble extends Service {
 
             for (String key : listHashMap.keySet()) {
 
+                Toast.makeText(this, ""+key, Toast.LENGTH_SHORT).show();
                 keys.add(key);
 
                 LinearLayout headLinear = (LinearLayout) LayoutInflater.from(this).inflate(R.layout.scrolltext, null);
@@ -527,63 +522,6 @@ public class FloatingBubble extends Service {
                     }
                 });
             }
-
-
-            adapter.setItemClickListner(new CustomPagerAdapter.Clicked() {
-                @Override
-                public void itemClicked(int pos, String message) {
-
-                    EventBus.getDefault().post(new postEvent());
-
-                    RemoteInput[] remoteInputs = new RemoteInput[notificationWear.remoteInputs.size()];
-                    Intent localIntent = new Intent();
-                    Bundle localBundle = notificationWear.bundle;
-
-                    int i = 0;
-
-                    for (RemoteInput remoteIn : notificationWear.remoteInputs) {
-                        remoteInputs[i] = remoteIn;
-                        localBundle.putCharSequence(remoteInputs[i].getResultKey(), message);
-                        i++;
-                    }
-
-                    RemoteInput.addResultsToIntent(remoteInputs, localIntent, localBundle);
-                    try {
-
-                        if (remoteInputs[pos].getLabel().equals("Reply to " + keys.get(pos)))
-                            notificationWear.pendingIntent.get(pos).send(FloatingBubble.this, 0, localIntent);
-                        else {
-
-                            Toast.makeText(FloatingBubble.this, "else remote", Toast.LENGTH_SHORT).show();
-                            for (int x = 0; x < remoteInputs.length; x++) {
-                                if (remoteInputs[x].getLabel().equals("Reply to " + keys.get(pos))) {
-                                    notificationWear.pendingIntent.get(x).send(FloatingBubble.this, 0, localIntent);
-                                    break;
-                                }
-
-                            }
-
-                        }
-
-                        reply messageReply = new reply();
-                        messageReply.setMessage(message);
-                        messageReply.setKey(keys.get(pos));
-                        messageReply.setPos(listHashMap.get(keys.get(pos)).size());
-                        messageReply.setTime(System.currentTimeMillis());
-
-                        replyData.add(messageReply);
-
-                        arrangeData();
-                        setAdapter();
-
-
-                    } catch (PendingIntent.CanceledException e) {
-
-                    }
-
-                }
-            });
-
         }
 
 
@@ -645,8 +583,67 @@ public class FloatingBubble extends Service {
 
         int pos = view_pager.getCurrentItem();
         adapter = new CustomPagerAdapter(this, listHashMap, keys);
+        adapter.setItemClickListner(this);
         view_pager.setAdapter(adapter);
         view_pager.setCurrentItem(pos);
     }
 
+    @Override
+    public void itemClicked(int pos, String message) {
+
+        if (message.isEmpty()) {
+            Toast.makeText(this, "Message cannot be empty !", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        EventBus.getDefault().post(new postEvent());
+
+        RemoteInput[] remoteInputs = new RemoteInput[notificationWear.remoteInputs.size()];
+        Intent localIntent = new Intent();
+        Bundle localBundle = notificationWear.bundle;
+
+        int i = 0;
+
+        for (RemoteInput remoteIn : notificationWear.remoteInputs) {
+            remoteInputs[i] = remoteIn;
+            localBundle.putCharSequence(remoteInputs[i].getResultKey(), message);
+            i++;
+        }
+
+        RemoteInput.addResultsToIntent(remoteInputs, localIntent, localBundle);
+        try {
+
+            if (remoteInputs[pos].getLabel().equals("Reply to " + keys.get(pos)))
+                notificationWear.pendingIntent.get(pos).send(FloatingBubble.this, 0, localIntent);
+            else {
+
+                Toast.makeText(FloatingBubble.this, "else remote", Toast.LENGTH_SHORT).show();
+                for (int x = 0; x < remoteInputs.length; x++) {
+                    if (remoteInputs[x].getLabel().equals("Reply to " + keys.get(pos))) {
+                        notificationWear.pendingIntent.get(x).send(FloatingBubble.this, 0, localIntent);
+                        break;
+                    }
+
+                }
+
+            }
+
+            reply messageReply = new reply();
+            messageReply.setMessage(message);
+            messageReply.setKey(keys.get(pos));
+            messageReply.setPos(listHashMap.get(keys.get(pos)).size());
+            messageReply.setTime(System.currentTimeMillis());
+
+            replyData.add(messageReply);
+
+            arrangeData();
+            setAdapter();
+
+
+        } catch (PendingIntent.CanceledException e) {
+
+        }
+
+
+    }
 }
