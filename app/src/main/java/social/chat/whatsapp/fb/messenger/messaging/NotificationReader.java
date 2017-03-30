@@ -39,13 +39,23 @@ public class NotificationReader extends NotificationListenerService {
     String[] msgBifercator;
 
     private int duplicateMsg;
+
+    /**
+     * using wear to get actions and intent for notification
+     */
     private NotificationWear notificationWear;
 
+    /**
+     * list of notification actions
+     */
     private ArrayList<NotificationCompat.Action> actions;
+
+    /**
+     * list of notification intents
+     */
     private ArrayList<PendingIntent> intentList;
 
     private String prev = "";
-
 
     private static final String TAG = "Lines";
 
@@ -70,6 +80,8 @@ public class NotificationReader extends NotificationListenerService {
         Bundle extras = sbn.getNotification().extras;
         CharSequence[] lines = extras.getCharSequenceArray(Notification.EXTRA_TEXT_LINES);
 
+        duplicateMsg = 0;
+
         if (lines != null && lines.length > 0) {
 
             String title = extras.getString("android.title");
@@ -90,16 +102,16 @@ public class NotificationReader extends NotificationListenerService {
                 if (msgs.size() < lines.length) {
                     for (int i = msgs.size(); i < lines.length; i++)
                         multipleConversation(lines, i, sbn, extras);
-                }
-// else
-//                    addWithDuplicateCheck(lines, sbn, extras);
+                } else
+                    addWithDuplicateCheck(lines, sbn, extras);
 
             } else {
 
                 if (msgs.size() < lines.length) {
                     for (int i = msgs.size(); i < lines.length; i++)
                         singleConversation(lines, i, title, sbn);
-                }
+                } else
+                    addWithDuplicateCheck2(lines, title, sbn);
 
             }
 
@@ -118,81 +130,7 @@ public class NotificationReader extends NotificationListenerService {
         startChat.putParcelableArrayListExtra(Constants.msgs, msgs);
         startService(startChat);
 
-
-//        duplicateMsg = -1;
-//
-//        Log.d("Lines", "called ji");
-//        Bundle extras = sbn.getNotification().extras;
-//        CharSequence[] lines = extras.getCharSequenceArray(Notification.EXTRA_TEXT_LINES);
-//
-//        if (lines != null && lines.length > 0) {
-//
-//            String title = extras.getString("android.title");
-//            String text = extras.getString("android.text");
-//
-//            if (title == null)
-//                return;
-//
-//
-//            Log.d("Lines", "title " + title + " text " + text);
-//
-//            for (CharSequence k : lines)
-//                Log.d("Lines", "Char " + k);
-//
-//            if (title.equals("WhatsApp")) {
-//
-//                Log.d("Lines", "mul");
-//
-//                if (msgs.size() < lines.length) {
-//                    for (int i = msgs.size(); i < lines.length; i++)
-//                        multipleConversation(lines, i, sbn, extras);
-//                }else
-//                    addWithDuplicateCheck(lines, sbn, extras);
-//
-//            } else {
-//
-//                if (msgs.size() < lines.length) {
-//                    pos = lines.length;
-//                    for (int i = msgs.size(); i < lines.length; i++)
-//                        singleConversation(lines, i, title, sbn);
-//                } else{
-//
-//
-//                }
-////                    addWithDuplicateCheck2(lines, title, sbn);
-//
-//
-//            }
-//
-//        } else {
-//
-//            NotificationWearReader(sbn.getNotification());
-//
-//            EventBus.getDefault().post(notificationWear);
-//
-//            CharSequence singleMessage = extras.getCharSequence(Notification.EXTRA_TEXT);
-//            Log.d("Lines", " txt " + singleMessage);
-//
-//            if (!calledOnce) {
-//                calledOnce = true;
-//                addSingleMessage(extras, lines, sbn);
-//
-//            }
-//
-//        }
-//
-//        Intent startChat = new Intent(this, FloatingBubble.class);
-//        startChat.putParcelableArrayListExtra(Constants.msgs, msgs);
-//        startService(startChat);
-
     }
-
-//    private void attachImages() {
-//
-//        for (int i = 0; i < msgs.size(); i++) {
-//            msgs.get(i).setIcon(icons.get(i));
-//        }
-//    }
 
 
     public void NotificationWearReader(Notification notification) {
@@ -245,6 +183,13 @@ public class NotificationReader extends NotificationListenerService {
     }
 
 
+    /**
+     * add message to list after a duplication check so that the same message is not added again and again
+     *
+     * @param lines  array of messages
+     * @param sbn    status bar notification
+     * @param extras bundle
+     */
     private void addWithDuplicateCheck(CharSequence[] lines, StatusBarNotification sbn, Bundle extras) {
 
         Log.d("Lines", "dup");
@@ -261,16 +206,32 @@ public class NotificationReader extends NotificationListenerService {
                     model.getMsg().equals(msgBifercator[1].trim())) {
 
                 duplicateMsg = i;
+
+                for (int j = duplicateMsg; j < lines.length; j++) {
+                    if (model.getMsg().equals(msgBifercator[1].trim()))
+                        duplicateMsg = j;
+                    else
+                        break;
+                }
+
                 break;
 
             } else if (model.getGroup().equals(msgBifercator[0].split("@")[1].trim()) && model.getUserName().equals(msgBifercator[0].split("@")[0].trim())
                     && model.getMsg().equals(msgBifercator[1].trim())) {
 
                 duplicateMsg = i;
+
+                for (int j = duplicateMsg; j < lines.length; j++) {
+                    if (model.getMsg().equals(lines[duplicateMsg]))
+                        duplicateMsg = j;
+                    else
+                        break;
+                }
                 break;
 
             }
         }
+
 
         if (duplicateMsg == lines.length - 1)
             multipleConversation(lines, lines.length - 1, sbn, extras);
@@ -280,28 +241,70 @@ public class NotificationReader extends NotificationListenerService {
 
     }
 
+
+    /**
+     * add message to list after a duplication check so that the same message is not added again and again
+     *
+     * @param lines array of messages
+     * @param title sender's name
+     * @param sbn   status bar notification
+     */
+
     private void addWithDuplicateCheck2(CharSequence[] lines, String title, StatusBarNotification sbn) {
 
-        Log.d("Lines", "dup");
+        Log.d("Lines", "dup2 " + lines.length);
         NotificationModel model = msgs.get(msgs.size() - 1);
+
+        Log.d(TAG, "Message " + model.getMsg());
 
         for (int i = 0; i < lines.length; i++) {
 
+            Log.d(TAG, lines[i].toString());
             msgBifercator = lines[i].toString().split(":", 2);
 
-            if (model.getMsg().equals(msgBifercator[1].trim())) {
+            if (msgBifercator.length > 1) {
 
-                duplicateMsg = i;
-                break;
+                Log.d(TAG, "Group message");
+                if (model.getMsg().equals(msgBifercator[1].trim()) && model.getUserName().equals(msgBifercator[0].trim())) {
+                    duplicateMsg = i;
+
+                    for (int j = duplicateMsg; j < lines.length; j++) {
+                        if (model.getMsg().equals(lines[duplicateMsg]))
+                            duplicateMsg = j;
+                        else
+                            break;
+                    }
+
+                    break;
+                }
+            } else {
+
+                Log.d(TAG, "normal chat");
+                if (model.getMsg().equals(lines[i].toString())) {
+                    duplicateMsg = i;
+
+                    for (int j = duplicateMsg; j < lines.length; j++) {
+                        if (model.getMsg().equals(lines[duplicateMsg]))
+                            duplicateMsg = j;
+                        else
+                            break;
+                    }
+
+                    break;
+                }
             }
+
 
         }
 
-        if (duplicateMsg == lines.length - 1)
+        if (duplicateMsg == lines.length - 1) {
+            Log.d("Lines", "single conv");
             singleConversation(lines, lines.length - 1, title, sbn);
-        else
+        } else {
+            Log.d("Lines", "Dup val " + duplicateMsg);
             for (int i = duplicateMsg + 1; i < lines.length; i++)
                 singleConversation(lines, i, title, sbn);
+        }
 
     }
 
@@ -339,7 +342,6 @@ public class NotificationReader extends NotificationListenerService {
 
             }
 
-//            setImageBitmap(sbn,model);
             msgs.add(model);
 
         }
@@ -359,6 +361,8 @@ public class NotificationReader extends NotificationListenerService {
      */
     private void singleConversation(CharSequence[] lines, int pos, String title, StatusBarNotification sbn) {
 
+        Log.d("Lines", "Single Conversation called");
+
         NotificationModel model = new NotificationModel();
         if (isaValidContact(title.trim())) {
 
@@ -377,7 +381,6 @@ public class NotificationReader extends NotificationListenerService {
         }
 
         model.setTime(sbn.getPostTime());
-//        setImageBitmap(sbn,model);
         msgs.add(model);
 
     }
