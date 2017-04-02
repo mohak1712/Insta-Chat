@@ -8,6 +8,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.amulyakhare.textdrawable.TextDrawable;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -38,12 +40,14 @@ public class AppListAdapter extends RecyclerView.Adapter<AppListHolder> {
     public void onBindViewHolder(AppListHolder holder, int position) {
 
         holder.name.setText(data.get(position));
+        TextDrawable drawable = TextDrawable.builder()
+                .buildRound("" + data.get(position).charAt(0), Color.parseColor("#3F51B5"));
+        holder.icon.setImageDrawable(drawable);
 
         if (position != 0)
             holder.comingSoon.setVisibility(View.VISIBLE);
-         else
+        else
             holder.comingSoon.setVisibility(View.GONE);
-
 
 
     }
