@@ -67,7 +67,7 @@ public class CustomPagerAdapter extends PagerAdapter {
 
                 ClipboardManager clipMan = (ClipboardManager) mContext.getSystemService(CLIPBOARD_SERVICE);
                 if (clipMan.getPrimaryClip()!=null)
-                    editText.setText(clipMan.getPrimaryClip().getItemAt(0).getText().toString());
+                    editText.setText(editText.getText().toString() + clipMan.getPrimaryClip().getItemAt(0).getText().toString());
 
                 return true;
             }
