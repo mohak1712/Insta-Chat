@@ -229,8 +229,8 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
 
                                 } else {
 
-                                     y_cord_remove = ((widthOfDev - (removeBubble.getHeight()* 2)));
-                                     x_cord_remove = ((heightOfDev - (removeBubble.getWidth()))/2);
+                                    y_cord_remove = ((widthOfDev - (removeBubble.getHeight() * 2)));
+                                    x_cord_remove = ((heightOfDev - (removeBubble.getWidth())) / 2);
 
                                 }
 
@@ -331,6 +331,25 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
         horizontal_scroller.setVisibility(View.VISIBLE);
 
         windowManager.updateViewLayout(bubbleView, imageWindowParams);
+
+        bubbleView.setFocusableInTouchMode(true);
+        bubbleView.requestFocus();
+
+        bubbleView.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View view, int i, KeyEvent keyEvent) {
+
+                if (i == KeyEvent.KEYCODE_BACK) {
+
+                    removeChatWindow();
+                    return true;
+                } else
+                    return false;
+
+            }
+        });
+
+
 
     }
 
@@ -446,7 +465,11 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
 
         imageWindowParams.gravity = Gravity.TOP | Gravity.LEFT;
         imageWindowParams.x = 10;
-        imageWindowParams.y = heightOfDev / 2;
+
+        if (configuration == 1)
+            imageWindowParams.y = heightOfDev / 2;
+        else
+            imageWindowParams.y = widthOfDev / 2;
 
         windowManager.updateViewLayout(bubbleView, imageWindowParams);
 
@@ -461,30 +484,22 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
          * 1 = Portrait
          * 2 = Landscape
          */
-
         configuration = newConfig.orientation;
-        Toast.makeText(this, "called config", Toast.LENGTH_SHORT).show();
-        int x_cord_remove, y_cord_remove;
-        WindowManager.LayoutParams param_remove = (WindowManager.LayoutParams) removeView.getLayoutParams();
 
-        if (newConfig.orientation == 1) {
+        if (configuration == 1) {
 
-            y_cord_remove = ((widthOfDev - (removeBubble.getWidth())) / 2);
-            x_cord_remove = (heightOfDev - ((removeBubble.getHeight() * 2)));
+            imageWindowParams.x = 10;
+            imageWindowParams.y = heightOfDev / 2;
 
 
         } else {
 
-            x_cord_remove = ((widthOfDev - (removeBubble.getWidth())) / 2);
-            y_cord_remove = (heightOfDev - ((removeBubble.getHeight() * 2)));
-
+            imageWindowParams.x = 10;
+            imageWindowParams.y = widthOfDev / 2;
 
         }
 
-        param_remove.x = x_cord_remove;
-        param_remove.y = y_cord_remove;
-
-        windowManager.updateViewLayout(removeView, param_remove);
+        windowManager.updateViewLayout(bubbleView, imageWindowParams);
     }
 
     private void addRemoveView() {
@@ -544,7 +559,6 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
 
         if (intent != null && intent.getParcelableArrayListExtra(Constants.msgs) != null) {
 
-//            Toast.makeText(this, "called service", Toast.LENGTH_SHORT).show();
             msgsData = intent.getParcelableArrayListExtra(Constants.msgs);
 
             arrangeData();
@@ -554,7 +568,7 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
 
             for (String key : listHashMap.keySet()) {
 
-//                Toast.makeText(this, "" + key, Toast.LENGTH_SHORT).show();
+
                 keys.add(key);
 
                 LinearLayout headLinear = (LinearLayout) LayoutInflater.from(this).inflate(R.layout.scrolltext, null);
@@ -569,6 +583,9 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
 
             setAdapter();
 
+            if (horizontalLinearLayout.getChildAt(0) != null)
+                horizontalLinearLayout.getChildAt(0).setBackgroundColor(Color.parseColor("#d3d3d3"));
+
             for (int i = 0; i < horizontalLinearLayout.getChildCount(); i++) {
 
                 final int finalI = i;
@@ -578,6 +595,7 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
                     public void onClick(View view) {
 
                         view_pager.setCurrentItem(finalI);
+                        horizontalLinearLayout.getChildAt(finalI).setBackgroundColor(Color.parseColor("#d3d3d3"));
                     }
                 });
             }
@@ -655,11 +673,6 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
         view_pager.setAdapter(adapter);
         view_pager.setCurrentItem(pos);
 
-        RecyclerView recycler = (RecyclerView) view_pager.findViewWithTag(pos);
-        if (recycler != null)
-            Toast.makeText(this, "nn", Toast.LENGTH_SHORT).show();
-        else
-            Toast.makeText(this, "null", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -670,11 +683,6 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
             Toast.makeText(this, "Message cannot be empty !", Toast.LENGTH_SHORT).show();
             return;
         }
-
-
-        RecyclerView recycler = (RecyclerView) view_pager.findViewWithTag(pos);
-        if (recycler != null)
-            recycler.computeVerticalScrollOffset();
 
 
         EventBus.getDefault().post(new postEvent());
@@ -728,8 +736,12 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
 
     }
 
-    void closeChat() {
 
-        int pos = view_pager.getCurrentItem();
+    @Subscribe
+    public void closeBubble(closeBubbleEvent event) {
+
+        removeChatWindow();
     }
+
+
 }

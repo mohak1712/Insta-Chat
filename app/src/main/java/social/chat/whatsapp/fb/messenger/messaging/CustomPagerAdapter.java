@@ -5,6 +5,7 @@ import android.content.Context;
 import android.support.v4.view.PagerAdapter;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -70,6 +71,20 @@ public class CustomPagerAdapter extends PagerAdapter {
                     editText.setText(editText.getText().toString() + clipMan.getPrimaryClip().getItemAt(0).getText().toString());
 
                 return true;
+            }
+        });
+
+        editText.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View view, int i, KeyEvent keyEvent) {
+
+                if (i == KeyEvent.KEYCODE_BACK) {
+
+                    editText.clearFocus();
+                    return true;
+                } else
+                    return false;
+
             }
         });
 
