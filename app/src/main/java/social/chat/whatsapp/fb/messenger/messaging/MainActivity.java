@@ -12,12 +12,15 @@ import android.os.Handler;
 import android.provider.ContactsContract;
 import android.provider.Settings;
 import android.support.annotation.RequiresApi;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.View;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -27,13 +30,17 @@ public class MainActivity extends AppCompatActivity {
 
     RecyclerView recyclerView;
     ArrayList<String> data;
+    FloatingActionButton githubAction;
+    ImageView rateapp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        data = new ArrayList<>();
+        recyclerView = (RecyclerView) findViewById(R.id.appList);
+        githubAction = (FloatingActionButton) findViewById(R.id.github);
+        rateapp = (ImageView) findViewById(R.id.rate);
 
         data = new ArrayList<>();
         data.add("WhatsApp");
@@ -42,7 +49,6 @@ public class MainActivity extends AppCompatActivity {
         data.add("Telegram");
         data.add("Viber");
 
-        recyclerView = (RecyclerView) findViewById(R.id.appList);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(new AppListAdapter(this, data));
 
@@ -54,12 +60,45 @@ public class MainActivity extends AppCompatActivity {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_DENIED)
             readContactsPermission();
 
+        githubAction.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                showAlertBox("Developer ? \nHelp me maintain this project", "This project is open sourced on Github and I need your support to make it better.")
+                        .setPositiveButton("Show Project", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+
+                                Uri webpage = Uri.parse("https://github.com/mohak1712/ChatBubbleForAll");
+                                Intent webIntent = new Intent(Intent.ACTION_VIEW, webpage);
+                                startActivity(webIntent);
+
+                            }
+                        }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+
+                        dialogInterface.dismiss();
+                    }
+                }).show();
+            }
+        });
+
+        rateapp.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                rateOnPlayStore();
+            }
+        });
     }
 
+    /**
+     * show alert explaining need for contacts permission and ask for the same
+     */
     private void readContactsPermission() {
 
-        showAlertBox("Read Contacts Permission Required", "This permission is required to read your contacts.Your contacts are not stored." +
-                "Please grant the permission.")
+        showAlertBox("Read Contacts Permission Required", "Note - Your contacts are not stored. The app wont work without this permission.")
                 .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
@@ -79,9 +118,11 @@ public class MainActivity extends AppCompatActivity {
         }).show().setCanceledOnTouchOutside(false);
 
 
-
     }
 
+    /**
+     * show alert explaining need for notification permission and ask for the same
+     */
     private void notificationPermission() {
 
         ComponentName cn = new ComponentName(this, NotificationReader.class);
@@ -91,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
         if (enabled)
             return;
 
-        showAlertBox("Read Notification Permission Required", "Please grant the permission.")
+        showAlertBox("Read Notification Permission Required", "This perm.. The app wont work without this permission")
                 .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
@@ -112,10 +153,13 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * show alert explaining need for overlay permission and ask for the same
+     */
     @RequiresApi(api = Build.VERSION_CODES.M)
     private void overlayPermission() {
 
-        showAlertBox("Overlay Permission Required", "Overlay permission is required so that you can chat from anywhere. Please grant the permission.")
+        showAlertBox("Overlay Permission Required", "Overlay permission is required so that you can chat from anywhere. The app wont work without this permission.")
                 .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
@@ -136,6 +180,13 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * creates alert dialog builder
+     *
+     * @param title   Title of alert dialog
+     * @param message Message inside alert dialog
+     * @return AlertDialog.Builder object
+     */
     public AlertDialog.Builder showAlertBox(String title, String message) {
 
         return new AlertDialog.Builder(this)
@@ -143,5 +194,19 @@ public class MainActivity extends AppCompatActivity {
                 .setMessage(message);
     }
 
+
+    /**
+     * open app directly in play store for rating
+     */
+    private void rateOnPlayStore() {
+
+        final String appPackageName = "social.chat.whatsapp.fb.messenger.messaging";
+        try {
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + appPackageName)));
+        } catch (android.content.ActivityNotFoundException anfe) {
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + appPackageName)));
+        }
+
+    }
 
 }
