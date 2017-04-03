@@ -10,10 +10,12 @@ import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
+import android.media.Image;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Vibrator;
+import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.RemoteInput;
@@ -37,6 +39,7 @@ import android.widget.Toast;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -111,17 +114,10 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
      */
     ArrayList<reply> replyData;
 
-    private NotificationWear notificationWear;
-
-    private WindowManager.LayoutParams imageWindowParams;
-    private LinearLayout removeView, bubbleView;
-    private LayoutInflater inflater;
-    private ArrayList<NotificationModel> msgsData;
-    private LinearLayout chatLinear;
-    private ViewPager view_pager;
-    private RelativeLayout relative;
-    private HorizontalScrollView horizontal_scroller;
-    private LinearLayout horizontalLinearLayout;
+    /**
+     * check if service is running
+     */
+    static boolean isServiceRunning;
 
     /**
      * checks orientation
@@ -129,6 +125,30 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
      * 2 = Landscape
      */
     private int configuration = 1;
+
+    /**
+     * layout params of window manager for chat head
+     */
+    private WindowManager.LayoutParams imageWindowParams;
+
+    /**
+     * open WhatsApp directly
+     */
+    private ImageView openWhatsApp;
+
+    /**
+     * notifies user of a new message
+     */
+    private View newMessage;
+
+    private LinearLayout removeView, bubbleView, horizontalLinearLayout, chatLinear;
+    private LayoutInflater inflater;
+    private ArrayList<NotificationModel> msgsData;
+    private ViewPager view_pager;
+    private RelativeLayout relative;
+    private HorizontalScrollView horizontal_scroller;
+
+    private NotificationWear notificationWear;
 
 
     @Override
@@ -139,6 +159,8 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
         Log.d("Lines", "Service created");
 
         EventBus.getDefault().register(this);
+
+        isServiceRunning = false;
 
         listHashMap = new LinkedHashMap<>();
         replyData = new ArrayList<>();
@@ -325,7 +347,8 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
                 WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
                 PixelFormat.TRANSLUCENT);
 
-
+        newMessage.setVisibility(View.GONE);
+        openWhatsApp.setVisibility(View.VISIBLE);
         view_pager.setVisibility(View.VISIBLE);
         relative.setVisibility(View.VISIBLE);
         horizontal_scroller.setVisibility(View.VISIBLE);
@@ -349,8 +372,17 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
             }
         });
 
+        openWhatsApp.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
 
+                removeChatWindow();
+                Intent launchIntent = getPackageManager().getLaunchIntentForPackage("com.whatsapp");
+                launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(launchIntent);
 
+            }
+        });
     }
 
 
@@ -396,6 +428,8 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
 
         bubbleView = (LinearLayout) inflater.inflate(R.layout.bubble_layout, null);
         bubble = (CircleImageView) bubbleView.findViewById(R.id.bubble);
+        newMessage = bubbleView.findViewById(R.id.newmessage);
+        openWhatsApp = (ImageView) bubbleView.findViewById(R.id.openWhatsapp);
 
         relative = (RelativeLayout) bubbleView.findViewById(R.id.rel);
         horizontal_scroller = (HorizontalScrollView) bubbleView.findViewById(R.id.scroller);
@@ -532,6 +566,7 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
     public void onDestroy() {
         super.onDestroy();
 
+        isServiceRunning=false;
         EventBus.getDefault().post(new clearListEvent());
 
         if (windowManager != null && bubbleView != null) {
@@ -557,61 +592,49 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
     @Override
     public int onStartCommand(final Intent intent, int flags, int startId) {
 
+        Toast.makeText(this, "called service", Toast.LENGTH_SHORT).show();
+
         if (intent != null && intent.getParcelableArrayListExtra(Constants.msgs) != null) {
 
             msgsData = intent.getParcelableArrayListExtra(Constants.msgs);
 
-            arrangeData();
+            if (!isWindowAttached)
+                newMessage.setVisibility(View.VISIBLE);
 
-            keys.clear();
-            horizontalLinearLayout.removeAllViews();
+            isServiceRunning = true;
 
-            for (String key : listHashMap.keySet()) {
-
-
-                keys.add(key);
-
-                LinearLayout headLinear = (LinearLayout) LayoutInflater.from(this).inflate(R.layout.scrolltext, null);
-                TextView tv = (TextView) headLinear.findViewById(R.id.title);
-                tv.setText(key);
-
-                horizontalLinearLayout.addView(headLinear);
-
-            }
-
-            horizontal_scroller.setHorizontalScrollBarEnabled(false);
-
+            arrangeData(msgsData);
+            arrangeKeys();
             setAdapter();
-
-            if (horizontalLinearLayout.getChildAt(0) != null)
-                horizontalLinearLayout.getChildAt(0).setBackgroundColor(Color.parseColor("#d3d3d3"));
-
-            for (int i = 0; i < horizontalLinearLayout.getChildCount(); i++) {
-
-                final int finalI = i;
-
-                horizontalLinearLayout.getChildAt(i).setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-
-                        view_pager.setCurrentItem(finalI);
-                        horizontalLinearLayout.getChildAt(finalI).setBackgroundColor(Color.parseColor("#d3d3d3"));
-                    }
-                });
-            }
-
-            bubbleView.setOnKeyListener(new View.OnKeyListener() {
-                @Override
-                public boolean onKey(View view, int i, KeyEvent keyEvent) {
-                    Toast.makeText(FloatingBubble.this, "clicked", Toast.LENGTH_SHORT).show();
-                    return false;
-                }
-            });
+            setClickListner();
 
         }
 
 
         return super.onStartCommand(intent, flags, startId);
+    }
+
+    /**
+     * set click listener to all the children of horizontal scrollview
+     */
+    private void setClickListner() {
+
+        if (horizontalLinearLayout.getChildAt(0) != null && view_pager.getCurrentItem() == 0)
+            horizontalLinearLayout.getChildAt(0).setBackgroundColor(Color.parseColor("#d3d3d3"));
+
+        for (int i = 0; i < horizontalLinearLayout.getChildCount(); i++) {
+
+            final int finalI = i;
+
+            horizontalLinearLayout.getChildAt(i).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+
+                    view_pager.setCurrentItem(finalI);
+                    horizontalLinearLayout.getChildAt(finalI).setBackgroundColor(Color.parseColor("#d3d3d3"));
+                }
+            });
+        }
     }
 
 
@@ -622,7 +645,55 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
     }
 
 
-    public void arrangeData() {
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void getNotiifcationData(postNotificationData data) {
+
+        msgsData.clear();
+        msgsData.addAll(data.msgs);
+        arrangeData(msgsData);
+        arrangeKeys();
+        setClickListner();
+
+        adapter.notifyDataSetChanged();
+
+        for (int i = 0; i < adapter.getCount(); i++) {
+
+            ListAdapter adapter = (ListAdapter) ((RecyclerView) view_pager.findViewWithTag(i)).getAdapter();
+            adapter.swap(listHashMap.get(keys.get(i)));
+        }
+
+    }
+
+    /**
+     * get all the keys for the HashMap and add them to horizontal scrollview
+     */
+    private void arrangeKeys() {
+
+        keys.clear();
+        horizontalLinearLayout.removeAllViews();
+
+        for (String key : listHashMap.keySet()) {
+
+            keys.add(key);
+
+            LinearLayout headLinear = (LinearLayout) LayoutInflater.from(this).inflate(R.layout.scrolltext, null);
+            TextView tv = (TextView) headLinear.findViewById(R.id.title);
+            tv.setText(key);
+
+            horizontalLinearLayout.addView(headLinear);
+
+        }
+
+        horizontal_scroller.setHorizontalScrollBarEnabled(false);
+    }
+
+
+    /**
+     * convert array list of data to Linked HashMap
+     *
+     * @param msgsData array list of notification data
+     */
+    public void arrangeData(ArrayList<NotificationModel> msgsData) {
 
         listHashMap.clear();
 
@@ -665,6 +736,9 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
 
     }
 
+    /**
+     * set adapter to the viewpager
+     */
     void setAdapter() {
 
         int pos = view_pager.getCurrentItem();
@@ -706,7 +780,7 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
                 notificationWear.pendingIntent.get(pos).send(FloatingBubble.this, 0, localIntent);
             else {
 
-                Toast.makeText(FloatingBubble.this, "else remote", Toast.LENGTH_SHORT).show();
+
                 for (int x = 0; x < remoteInputs.length; x++) {
                     if (remoteInputs[x].getLabel().equals("Reply to " + keys.get(pos))) {
                         notificationWear.pendingIntent.get(x).send(FloatingBubble.this, 0, localIntent);
@@ -725,9 +799,10 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
 
             replyData.add(messageReply);
 
-            arrangeData();
-            setAdapter();
+            arrangeData(msgsData);
 
+            ListAdapter adapter = (ListAdapter) ((RecyclerView) view_pager.findViewWithTag(pos)).getAdapter();
+            adapter.swap(listHashMap.get(keys.get(pos)));
 
         } catch (PendingIntent.CanceledException e) {
 
