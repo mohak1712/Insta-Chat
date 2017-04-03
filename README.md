@@ -18,15 +18,15 @@ Use floating chatHeads bubbles like in facebook for whatsapp, telegram and other
 
 ## Coming Soon -
 
-l. **Hangouts**
-l. **Skype**
-l. **Telegram**
-l. **Line**
-l. **Slack**
+1. **Hangouts**
+1. **Skype**
+1. **Telegram**
+1. **Line**
+1. **Slack**
 
 ## Permissions - 
 
-l. **READ_CONTACTS**
-l. **ACTION_NOTIFICATION_LISTENER_SETTINGS**
-l. **SYSTEM_ALERT_WINDOW**
-l. **VIBRATE**
+1. **READ_CONTACTS**
+1. **ACTION_NOTIFICATION_LISTENER_SETTINGS**
+1. **SYSTEM_ALERT_WINDOW**
+1. **VIBRATE**
