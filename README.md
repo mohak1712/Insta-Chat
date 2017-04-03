@@ -4,21 +4,29 @@ InstaChat offers a revolutionary way to read messages of your favourite messenge
 Sometimes you did not want to quit your current app but also need to read some important messages or reply to them. Thats the point where InstaChat will help you.
 Use floating chatHeads bubbles like in facebook for whatsapp, telegram and others!
 
+## Features
+
+**Read messages from anywhere**
+**Reply to messages from aywhere**
+**Separate notifications for every contact**
+**Chat heads notification to write messages at any time**
+
+
 ## Currently supported apps - 
 
-#### Whatsapp
+**Whatsapp**
 
 ## Coming Soon -
 
-#### Hangouts
-#### Skype
-#### Telegram
-#### Line
-#### Slack
+**Hangouts**
+**Skype**
+**Telegram**
+**Line**
+**Slack**
 
 ## Permissions - 
 
-#### READ_CONTACTS
-#### ACTION_NOTIFICATION_LISTENER_SETTINGS
-#### SYSTEM_ALERT_WINDOW
-#### VIBRATE
+**READ_CONTACTS**
+**ACTION_NOTIFICATION_LISTENER_SETTINGS**
+**SYSTEM_ALERT_WINDOW**
+**VIBRATE**
