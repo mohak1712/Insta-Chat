@@ -1,28 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/activity_main"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:orientation="vertical"
     android:layout_height="match_parent"
     tools:context="social.chat.whatsapp.fb.messenger.messaging.MainActivity">
 
-
-    <android.support.v7.widget.Toolbar
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:title="Insta Chat - Chat from anywhere"
-        app:titleTextColor="#ffffff"
-        android:background="@color/colorPrimary">
-
-    </android.support.v7.widget.Toolbar>
-
-    <android.support.v7.widget.RecyclerView
+    <LinearLayout
+        android:id="@+id/activity_main"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/appList">
+        android:orientation="vertical">
 
-    </android.support.v7.widget.RecyclerView>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
-</LinearLayout>
+            <android.support.v7.widget.Toolbar
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/colorPrimary"
+                app:title="Insta Chat - Chat from anywhere"
+                app:titleTextColor="#ffffff">
+
+            </android.support.v7.widget.Toolbar>
+
+            <ImageView
+                android:id="@+id/rate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:paddingEnd="10dp"
+                android:paddingStart="10dp"
+                app:srcCompat="@drawable/rate" />
+
+        </RelativeLayout>
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/appList"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        </android.support.v7.widget.RecyclerView>
+
+    </LinearLayout>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/github"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="10dp"
+        android:src="@drawable/send"
+        app:fabSize="normal" />
+
+</FrameLayout>

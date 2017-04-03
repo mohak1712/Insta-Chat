@@ -1,44 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical">
-
-    <TextView
-        android:id="@+id/time"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:textColor="@android:color/darker_gray" />
+    android:layout_margin="5dp">
 
     <LinearLayout
-        android:id="@+id/activity_main"
-        android:layout_width="wrap_content"
+        android:id="@+id/mainLinear"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:orientation="horizontal">
+        android:layout_marginBottom="10dp"
+        android:orientation="horizontal"
+        android:padding="10dp">
 
-        <de.hdodenhof.circleimageview.CircleImageView
-            xmlns:app="http://schemas.android.com/apk/res-auto"
-            android:id="@+id/icon"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginEnd="5dp"
-            android:src="@mipmap/ic_launcher"
-            app:civ_border_color="#d3d3d3"
-            app:civ_border_width="1dp" />
+        <ImageView
+            android:id="@+id/packageImage"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginEnd="10dp" />
 
         <TextView
-            android:id="@+id/message"
-            android:layout_width="wrap_content"
-            android:background="#065E52"
-            android:padding="10dp"
-            android:autoLink="web"
-            android:textColor="@android:color/white"
-            android:layout_gravity="center_vertical"
-            android:layout_height="wrap_content" />
-
+            android:id="@+id/packageText"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:text="WhatsApp"
+            android:typeface="serif" />
 
     </LinearLayout>
 
-</LinearLayout>
+    <TextView
+        android:id="@+id/comingSoon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:padding="10dp"
+        android:typeface="serif"
+        android:text="Coming Soon" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#d3d3d3"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_gravity="bottom"/>
+
+</FrameLayout>

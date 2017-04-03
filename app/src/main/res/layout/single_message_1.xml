@@ -36,7 +36,7 @@
             android:linksClickable="false"
             android:padding="10dp"
             android:textColor="@android:color/white"
-            android:textIsSelectable="true" />
+            />
 
 
     </LinearLayout>

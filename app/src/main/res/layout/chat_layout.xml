@@ -1,0 +1,54 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/relative"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#ffffff">
+
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/rel"
+        android:background="#80d3d3d3"
+        android:overScrollMode="never"
+        android:padding="10dp" />
+
+
+    <RelativeLayout
+        android:id="@+id/rel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="#ffffff">
+
+        <ImageView
+            android:id="@+id/send"
+            android:layout_width="35dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="5dp"
+            android:paddingEnd="5dp"
+            android:paddingStart="5dp"
+            android:src="@drawable/send" />
+
+
+        <EditText
+            android:id="@+id/text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toStartOf="@+id/send"
+            android:background="@null"
+            android:cursorVisible="true"
+            android:gravity="center_vertical"
+            android:hint="Message..."
+            android:padding="10dp"
+            android:textColor="#000000"
+            android:textColorHint="@android:color/darker_gray" />
+
+
+    </RelativeLayout>
+
+
+</RelativeLayout>

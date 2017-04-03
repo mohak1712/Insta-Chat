@@ -1,17 +1,88 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/mainLinear"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:padding="2dp"
     android:orientation="vertical">
 
-    <de.hdodenhof.circleimageview.CircleImageView
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/bubble"
-        android:layout_width="50dp"
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/bubble"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/whatsapp" />
+
+        <View
+            android:id="@+id/newmessage"
+            android:layout_width="15dp"
+            android:layout_height="15dp"
+            android:layout_gravity="end"
+            android:layout_marginTop="5dp"
+            android:background="@drawable/circle" />
+
+    </FrameLayout>
+
+
+    <RelativeLayout
+        android:id="@+id/rel"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="#065E52"
+        android:visibility="gone">
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:paddingEnd="10dp"
+            android:paddingStart="10dp"
+            android:text="WhatsApp"
+            android:id="@+id/whatsapp"
+            android:textColor="@android:color/white"
+            android:textSize="20sp" />
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:id="@+id/openWhatsapp"
+            android:layout_marginEnd="10dp"
+            android:src="@drawable/open_whatsapp"/>
+
+    </RelativeLayout>
+
+    <HorizontalScrollView
+        android:id="@+id/scroller"
+        android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:src="@mipmap/ic_launcher"
-        app:civ_border_width="2dp"
-        app:civ_border_color="#FF000000"/>
+        android:background="#065E52"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:id="@+id/horizontalLinear"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+        </LinearLayout>
+
+    </HorizontalScrollView>
+
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/pager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/white"
+        android:visibility="gone">
+
+    </android.support.v4.view.ViewPager>
+
 
 </LinearLayout>
