@@ -6,10 +6,10 @@ Use floating chatHeads bubbles like in facebook for whatsapp, telegram and other
 
 ## Features
 
-**Read messages from anywhere**
-**Reply to messages from aywhere**
-**Separate notifications for every contact**
-**Chat heads notification to write messages at any time**
+1. **Read messages from anywhere**
+1. **Reply to messages from aywhere**
+1. **Separate notifications for every contact**
+1. **Chat heads notification to write messages at any time**
 
 
 ## Currently supported apps - 
