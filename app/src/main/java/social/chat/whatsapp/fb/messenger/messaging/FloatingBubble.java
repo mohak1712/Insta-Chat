@@ -42,7 +42,6 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -54,71 +53,58 @@ import de.hdodenhof.circleimageview.CircleImageView;
 public class FloatingBubble extends Service implements CustomPagerAdapter.Clicked {
 
     /**
-     * window manager
+     * check if service is running
      */
-    private WindowManager windowManager;
-
-    /**
-     * image view for stopping the service
-     */
-    private ImageView removeBubble;
-
-    /**
-     * initial exact coordinates of chat head
-     */
-    private int x_init_cord, y_init_cord;
-
-    /**
-     * initial relative coordinates of chat head
-     */
-    private int x_init_margin, y_init_margin;
-
-    /**
-     * width and height of device
-     */
-    private int widthOfDev, heightOfDev;
-
-    /**
-     * arranges data in key values pair
-     */
-    private LinkedHashMap<String, ArrayList<Object>> listHashMap;
-
+    static boolean isServiceRunning;
     /**
      * ViewPager Adapter
      */
     CustomPagerAdapter adapter;
-
     /**
      * contains list of keys
      */
     ArrayList<String> keys = new ArrayList<>();
-
-    /**
-     * previous location of chat head
-     */
-    private int click_x, click_y;
-
     /**
      * check if chat window is attached
      */
     boolean isWindowAttached = false;
-
     /**
      * bubble view
      */
 
     CircleImageView bubble;
-
     /**
      * store user reply to chat
      */
     ArrayList<reply> replyData;
-
     /**
-     * check if service is running
+     * window manager
      */
-    static boolean isServiceRunning;
-
+    private WindowManager windowManager;
+    /**
+     * image view for stopping the service
+     */
+    private ImageView removeBubble;
+    /**
+     * initial exact coordinates of chat head
+     */
+    private int x_init_cord, y_init_cord;
+    /**
+     * initial relative coordinates of chat head
+     */
+    private int x_init_margin, y_init_margin;
+    /**
+     * width and height of device
+     */
+    private int widthOfDev, heightOfDev;
+    /**
+     * arranges data in key values pair
+     */
+    private LinkedHashMap<String, ArrayList<Object>> listHashMap;
+    /**
+     * previous location of chat head
+     */
+    private int click_x, click_y;
     /**
      * checks orientation
      * 1 = Portrait (Default)
@@ -463,12 +449,12 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
             public void onPageSelected(int position) {
 
                 horizontal_scroller.scrollTo(horizontalLinearLayout.getChildAt(position).getLeft(), 0);
-                horizontalLinearLayout.getChildAt(position).setBackgroundColor(Color.parseColor("#d3d3d3"));
+                horizontalLinearLayout.getChildAt(position).findViewById(R.id.currentItem).setBackgroundColor(Color.parseColor("#ff69b4"));
 
                 for (int i = 0; i < horizontalLinearLayout.getChildCount(); i++) {
 
                     if (i != position)
-                        horizontalLinearLayout.getChildAt(i).setBackgroundColor(Color.parseColor("#065E52"));
+                        horizontalLinearLayout.getChildAt(i).findViewById(R.id.currentItem).setBackgroundColor(Color.parseColor("#065E52"));
                 }
 
             }
@@ -518,6 +504,7 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
          * 1 = Portrait
          * 2 = Landscape
          */
+
         configuration = newConfig.orientation;
 
         if (configuration == 1) {
@@ -566,7 +553,7 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
     public void onDestroy() {
         super.onDestroy();
 
-        isServiceRunning=false;
+        isServiceRunning = false;
         EventBus.getDefault().post(new clearListEvent());
 
         if (windowManager != null && bubbleView != null) {
@@ -592,7 +579,6 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
     @Override
     public int onStartCommand(final Intent intent, int flags, int startId) {
 
-        Toast.makeText(this, "called service", Toast.LENGTH_SHORT).show();
 
         if (intent != null && intent.getParcelableArrayListExtra(Constants.msgs) != null) {
 
@@ -619,8 +605,8 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
      */
     private void setClickListner() {
 
-        if (horizontalLinearLayout.getChildAt(0) != null && view_pager.getCurrentItem() == 0)
-            horizontalLinearLayout.getChildAt(0).setBackgroundColor(Color.parseColor("#d3d3d3"));
+        if (horizontalLinearLayout.getChildAt(view_pager.getCurrentItem()) != null)
+            horizontalLinearLayout.getChildAt(view_pager.getCurrentItem()).findViewById(R.id.currentItem).setBackgroundColor(Color.parseColor("#ff69b4"));
 
         for (int i = 0; i < horizontalLinearLayout.getChildCount(); i++) {
 
@@ -631,7 +617,7 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
                 public void onClick(View view) {
 
                     view_pager.setCurrentItem(finalI);
-                    horizontalLinearLayout.getChildAt(finalI).setBackgroundColor(Color.parseColor("#d3d3d3"));
+                    horizontalLinearLayout.getChildAt(finalI).findViewById(R.id.currentItem).setBackgroundColor(Color.parseColor("#ff69b4"));
                 }
             });
         }
@@ -662,6 +648,8 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
             adapter.swap(listHashMap.get(keys.get(i)));
         }
 
+        if (!isWindowAttached)
+            newMessage.setVisibility(View.VISIBLE);
     }
 
     /**
@@ -775,6 +763,12 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
 
         RemoteInput.addResultsToIntent(remoteInputs, localIntent, localBundle);
         try {
+
+            if (remoteInputs.length <= pos) {
+
+                Toast.makeText(this, "Something went wrong please close the app and try again", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
             if (remoteInputs[pos].getLabel().equals("Reply to " + keys.get(pos)))
                 notificationWear.pendingIntent.get(pos).send(FloatingBubble.this, 0, localIntent);
