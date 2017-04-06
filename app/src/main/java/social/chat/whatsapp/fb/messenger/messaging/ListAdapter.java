@@ -38,6 +38,9 @@ import java.util.regex.Pattern;
 
 public class ListAdapter extends RecyclerView.Adapter<DataHolder> {
 
+    private static final int V1 = 1;
+    private static final int V2 = 2;
+
     private ArrayList<Object> data;
     private Context context;
 
@@ -50,7 +53,12 @@ public class ListAdapter extends RecyclerView.Adapter<DataHolder> {
 
     public DataHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
-        View view = LayoutInflater.from(context).inflate(R.layout.single_message_1, parent, false);
+        View view = null;
+        if (viewType == V1)
+            view = LayoutInflater.from(context).inflate(R.layout.single_message_1, parent, false);
+        else
+            view = LayoutInflater.from(context).inflate(R.layout.single_message_2, parent, false);
+
         return new DataHolder(view);
     }
 
@@ -98,15 +106,24 @@ public class ListAdapter extends RecyclerView.Adapter<DataHolder> {
 
     }
 
+    @Override
+    public int getItemViewType(int position) {
+
+        if (data.get(position) instanceof NotificationModel)
+            return V1;
+        else
+            return V2;
+    }
 
     @Override
     public int getItemCount() {
-        return  data.size();
+        return data.size();
     }
 
 
     /**
      * update recycler view
+     *
      * @param updatedData new data
      */
     public void swap(ArrayList<Object> updatedData) {

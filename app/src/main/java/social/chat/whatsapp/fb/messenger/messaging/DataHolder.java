@@ -43,43 +43,51 @@ public class DataHolder extends RecyclerView.ViewHolder {
         dataLinear = (LinearLayout) itemView.findViewById(R.id.linear_data);
     }
 
-    public void bindData(NotificationModel notificationModel, int position) {
 
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        params.gravity = Gravity.START;
-        params.setMargins(0, 10, 0, 10);
-        dataLinear.setLayoutParams(params);
-        imageView.setVisibility(View.VISIBLE);
-//        message.setBackgroundColor(Color.parseColor("#065E52"));
+    /**
+     * bind notification messages to recycler view
+     *
+     * @param notificationModel {@link NotificationModel} object
+     */
+    public void bindData(NotificationModel notificationModel) {
+
 
         if (!notificationModel.getGroup().equals("-null_123"))
             message.setText(notificationModel.getUserName() + " : \n" + notificationModel.getMsg());
         else
             message.setText(notificationModel.getMsg());
 
-        TextDrawable drawable = TextDrawable.builder()
-                .buildRound("" + notificationModel.getUserName().charAt(0), Color.parseColor("#065E52"));
+        TextDrawable drawable;
+
+        /* charAt(0) not working*/
+        if (notificationModel.getUserName().charAt(1) == '+')
+            drawable = TextDrawable.builder()
+                    .buildRound("U", Color.parseColor("#065E52"));
+        else
+            drawable = TextDrawable.builder()
+                    .buildRound("" + notificationModel.getUserName().charAt(0), Color.parseColor("#065E52"));
 
         imageView.setImageDrawable(drawable);
         addClickToLinks(message.getText().toString());
 
     }
 
+    /**
+     * bind reply message to recycler view
+     *
+     * @param replymessage {@link reply} object
+     */
     public void bindData2(reply replymessage) {
 
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        params.gravity = Gravity.END;
-        params.setMargins(0, 10, 0, 10);
-        dataLinear.setLayoutParams(params);
-        imageView.setVisibility(View.GONE);
         message.setText(replymessage.getMessage());
         addClickToLinks(replymessage.getMessage());
-//        message.setBackgroundColor(Color.parseColor("#80065E52"));
+        imageView.setImageDrawable(null);
     }
 
 
     /**
      * extracts link from the message if any and sets click on the link
+     *
      * @param text message text
      */
     public void addClickToLinks(String text) {
