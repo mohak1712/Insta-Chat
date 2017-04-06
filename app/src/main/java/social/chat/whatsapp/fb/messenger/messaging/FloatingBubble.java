@@ -195,7 +195,7 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
 
                     case MotionEvent.ACTION_DOWN:
                         time_start = System.currentTimeMillis();
-                        handler_longClick.postDelayed(runnable_longClick, 800);
+                        handler_longClick.postDelayed(runnable_longClick, 1000);
 
                         x_init_cord = x_cord;
                         y_init_cord = y_cord;
@@ -448,6 +448,9 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
             @Override
             public void onPageSelected(int position) {
 
+                bubbleView.setFocusableInTouchMode(true);
+                bubbleView.requestFocus();
+
                 horizontal_scroller.scrollTo(horizontalLinearLayout.getChildAt(position).getLeft(), 0);
                 horizontalLinearLayout.getChildAt(position).findViewById(R.id.currentItem).setBackgroundColor(Color.parseColor("#ff69b4"));
 
@@ -553,6 +556,7 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
     public void onDestroy() {
         super.onDestroy();
 
+        replyData.clear();
         isServiceRunning = false;
         EventBus.getDefault().post(new clearListEvent());
 
@@ -589,7 +593,7 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
 
             isServiceRunning = true;
 
-            arrangeData(msgsData);
+            arrangeData();
             arrangeKeys();
             setAdapter();
             setClickListner();
@@ -636,17 +640,20 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
 
         msgsData.clear();
         msgsData.addAll(data.msgs);
-        arrangeData(msgsData);
+        arrangeData();
         arrangeKeys();
         setClickListner();
 
         adapter.notifyDataSetChanged();
 
-        for (int i = 0; i < adapter.getCount(); i++) {
+        for (String key : keys){
 
-            ListAdapter adapter = (ListAdapter) ((RecyclerView) view_pager.findViewWithTag(i)).getAdapter();
-            adapter.swap(listHashMap.get(keys.get(i)));
+            RecyclerView list = ((RecyclerView) view_pager.findViewWithTag(key));
+            ListAdapter listadapter = (ListAdapter) list.getAdapter();
+            listadapter.swap(listHashMap.get(key));
+
         }
+
 
         if (!isWindowAttached)
             newMessage.setVisibility(View.VISIBLE);
@@ -678,10 +685,8 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
 
     /**
      * convert array list of data to Linked HashMap
-     *
-     * @param msgsData array list of notification data
      */
-    public void arrangeData(ArrayList<NotificationModel> msgsData) {
+    public void arrangeData() {
 
         listHashMap.clear();
 
@@ -689,25 +694,26 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
 
             if (msgsData.get(i).getGroup().equals("-null_123")) {
 
-                if (listHashMap.containsKey(msgsData.get(i).getUserName())) {
-                    listHashMap.get(msgsData.get(i).getUserName()).add(msgsData.get(i));
+                if (listHashMap.containsKey(msgsData.get(i).getUserName().trim())) {
+                    listHashMap.get(msgsData.get(i).getUserName().trim()).add(msgsData.get(i));
 
                 } else {
 
                     ArrayList<Object> singleDataList = new ArrayList<>();
                     singleDataList.add(msgsData.get(i));
-                    listHashMap.put(msgsData.get(i).getUserName(), singleDataList);
+                    listHashMap.put(msgsData.get(i).getUserName().trim(), singleDataList);
                 }
 
             } else {
 
-                if (listHashMap.containsKey(msgsData.get(i).getGroup())) {
-                    listHashMap.get(msgsData.get(i).getGroup()).add(msgsData.get(i));
+                if (listHashMap.containsKey(msgsData.get(i).getGroup().trim())) {
+                    listHashMap.get(msgsData.get(i).getGroup().trim()).add(msgsData.get(i));
 
                 } else {
+
                     ArrayList<Object> singleDataList = new ArrayList<>();
                     singleDataList.add(msgsData.get(i));
-                    listHashMap.put(msgsData.get(i).getGroup(), singleDataList);
+                    listHashMap.put(msgsData.get(i).getGroup().trim(), singleDataList);
                 }
 
             }
@@ -719,9 +725,8 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
                         listHashMap.get(replyData.get(j).getKey()).add(replyData.get(j));
                 }
 
+
         }
-
-
     }
 
     /**
@@ -741,13 +746,20 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
     public void itemClicked(int pos, String message) {
 
 
+        Log.d("Lines", "Clicked");
+
         if (message.isEmpty()) {
             Toast.makeText(this, "Message cannot be empty !", Toast.LENGTH_SHORT).show();
             return;
         }
 
+        EventBus.getDefault().post(new postEvent(keys.get(pos)));
 
-        EventBus.getDefault().post(new postEvent());
+        if (notificationWear == null) {
+
+            Toast.makeText(this, "Something went wrong", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         RemoteInput[] remoteInputs = new RemoteInput[notificationWear.remoteInputs.size()];
         Intent localIntent = new Intent();
@@ -770,9 +782,9 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
                 return;
             }
 
-            if (remoteInputs[pos].getLabel().equals("Reply to " + keys.get(pos)))
+            if (remoteInputs[pos].getLabel().equals("Reply to " + keys.get(pos))) {
                 notificationWear.pendingIntent.get(pos).send(FloatingBubble.this, 0, localIntent);
-            else {
+            } else {
 
 
                 for (int x = 0; x < remoteInputs.length; x++) {
@@ -780,7 +792,7 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
                         notificationWear.pendingIntent.get(x).send(FloatingBubble.this, 0, localIntent);
                         break;
                     }
-
+                    Log.d("Lines", remoteInputs[x].getLabel().toString());
                 }
 
             }
@@ -793,12 +805,14 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
 
             replyData.add(messageReply);
 
-            arrangeData(msgsData);
+            arrangeData();
 
-            ListAdapter adapter = (ListAdapter) ((RecyclerView) view_pager.findViewWithTag(pos)).getAdapter();
+            ListAdapter adapter = (ListAdapter) ((RecyclerView) view_pager.findViewWithTag(keys.get(pos))).getAdapter();
             adapter.swap(listHashMap.get(keys.get(pos)));
 
+
         } catch (PendingIntent.CanceledException e) {
+
 
         }
 
