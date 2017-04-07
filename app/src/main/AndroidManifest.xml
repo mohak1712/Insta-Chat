@@ -34,8 +34,7 @@
             />
         <meta-data
             android:name="io.fabric.ApiKey"
-            android:value="" />
+            android:value="add your key here" />
     </application>
 
-    <uses-permission android:name="android.permission.INTERNET" />
 </manifest>
