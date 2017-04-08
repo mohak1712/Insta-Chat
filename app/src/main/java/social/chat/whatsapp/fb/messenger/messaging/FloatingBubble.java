@@ -1,23 +1,17 @@
 package social.chat.whatsapp.fb.messenger.messaging;
 
-import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
-import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
-import android.media.Image;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Vibrator;
-import android.provider.Settings;
 import android.support.annotation.Nullable;
-import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.RemoteInput;
 import android.support.v4.view.ViewPager;
 
@@ -76,7 +70,7 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
     /**
      * store user reply to chat
      */
-    ArrayList<reply> replyData;
+    ArrayList<replyModel> replyData;
     /**
      * window manager
      */
@@ -638,15 +632,19 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void getNotiifcationData(postNotificationData data) {
 
+        if (!isWindowAttached)
+            newMessage.setVisibility(View.VISIBLE);
+
         msgsData.clear();
         msgsData.addAll(data.msgs);
         arrangeData();
         arrangeKeys();
         setClickListner();
 
-        adapter.notifyDataSetChanged();
+        view_pager.getAdapter().notifyDataSetChanged();
+        view_pager.setOffscreenPageLimit(adapter.getCount());
 
-        for (String key : keys){
+        for (String key : keys) {
 
             RecyclerView list = ((RecyclerView) view_pager.findViewWithTag(key));
             ListAdapter listadapter = (ListAdapter) list.getAdapter();
@@ -654,9 +652,6 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
 
         }
 
-
-        if (!isWindowAttached)
-            newMessage.setVisibility(View.VISIBLE);
     }
 
     /**
@@ -684,7 +679,7 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
 
 
     /**
-     * convert array list of data to Linked HashMap
+     * convert array list of data to Linked HashMap and add reply messages if any
      */
     public void arrangeData() {
 
@@ -739,12 +734,12 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
         adapter.setItemClickListner(this);
         view_pager.setAdapter(adapter);
         view_pager.setCurrentItem(pos);
+        view_pager.setOffscreenPageLimit(adapter.getCount());
 
     }
 
     @Override
     public void itemClicked(int pos, String message) {
-
 
         Log.d("Lines", "Clicked");
 
@@ -753,7 +748,7 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
             return;
         }
 
-        EventBus.getDefault().post(new postEvent(keys.get(pos)));
+        EventBus.getDefault().post(new postEvent(keys.get(pos), keys.size()));
 
         if (notificationWear == null) {
 
@@ -797,7 +792,7 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
 
             }
 
-            reply messageReply = new reply();
+            replyModel messageReply = new replyModel();
             messageReply.setMessage(message);
             messageReply.setKey(keys.get(pos));
             messageReply.setPos(listHashMap.get(keys.get(pos)).size());
