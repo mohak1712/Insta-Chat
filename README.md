@@ -2,12 +2,12 @@
 
 InstaChat offers a revolutionary way to read messages of your favourite messengers. It overlays every other app and you can reply from anywhere you want.
 Sometimes you did not want to quit your current app but also need to read some important messages or reply to them. Thats the point where InstaChat will help you.
-Use floating chatHeads bubbles like in facebook for whatsapp, telegram and others!
+Use floating chatHeads bubbles like in Facebook for Whatsapp, Telegram and others!
 
 ## Features
 
 1. **Read messages from anywhere**
-1. **Reply to messages from aywhere**
+1. **Reply to messages from anywhere**
 1. **Separate notifications for every contact**
 1. **Chat heads notification to write messages at any time**
 
