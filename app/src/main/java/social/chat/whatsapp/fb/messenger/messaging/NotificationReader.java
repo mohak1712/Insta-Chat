@@ -79,7 +79,8 @@ public class NotificationReader extends NotificationListenerService {
 
         if (!sbn.getPackageName().equals("com.whatsapp") || ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_DENIED)
             return;
-/*
+
+        /*
         TODO : check overlay permission in service( not working currently)
         if (android.os.Build.VERSION.SDK_INT >= 23) {
 
@@ -90,6 +91,7 @@ public class NotificationReader extends NotificationListenerService {
                 Log.d(TAG, "err4");
         }
 */
+
         Bundle extras = sbn.getNotification().extras;
         CharSequence[] lines = extras.getCharSequenceArray(Notification.EXTRA_TEXT_LINES);
 
@@ -259,12 +261,18 @@ public class NotificationReader extends NotificationListenerService {
      */
     private void singleConversation(CharSequence[] lines, int pos, String title, StatusBarNotification sbn) {
 
+        Log.d(TAG, "called sc");
+
         NotificationModel model = new NotificationModel();
         if (isaValidContact(title)) {
 
             model.setGroup("-null_123");
             model.setUserName(title);
             model.setMsg(lines[pos].toString());
+            /* prevent same message from getting added again and again*/
+            if (msgs.get(msgs.size() - 1).getUserName().equals(title) &&
+                    msgs.get(msgs.size() - 1).getMsg().equals(lines[pos].toString()))
+                return;
 
         } else {
 
@@ -272,6 +280,11 @@ public class NotificationReader extends NotificationListenerService {
             model.setGroup(title);
             model.setUserName(msgBifercator[0]);
             model.setMsg(msgBifercator[1]);
+            /* prevent same message from getting added again and again*/
+            if (msgs.get(msgs.size() - 1).getGroup().equals(title) &&
+                    msgs.get(msgs.size() - 1).getUserName().equals(msgBifercator[0]) &&
+                    msgs.get(msgs.size() - 1).getMsg().equals(msgBifercator[0]))
+                return;
         }
 
         model.setTime(sbn.getPostTime());
@@ -302,9 +315,19 @@ public class NotificationReader extends NotificationListenerService {
         if (msgBifercator[0].contains("@")) {
             model.setGroup(msgBifercator[0].split("@")[1]);
             model.setUserName(msgBifercator[0].split("@")[0]);
+            /* prevent same message from getting added again and again*/
+            if (msgs.get(msgs.size() - 1).getGroup().equals(msgBifercator[0].split("@")[1]) &&
+                    msgs.get(msgs.size() - 1).getUserName().equals(msgBifercator[0].split("@")[0]) &&
+                    msgs.get(msgs.size() - 1).getMsg().equals(msgBifercator[1]))
+                return;
+
         } else {
             model.setGroup("-null_123");
             model.setUserName(msgBifercator[0]);
+            /* prevent same message from getting added again and again*/
+            if (msgs.get(msgs.size() - 1).getUserName().equals(msgBifercator[0]) &&
+                    msgs.get(msgs.size() - 1).getMsg().equals(msgBifercator[1]))
+                return;
         }
 
         model.setMsg(msgBifercator[1]);
