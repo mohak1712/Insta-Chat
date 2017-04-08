@@ -6,7 +6,6 @@ package social.chat.whatsapp.fb.messenger.messaging;
 
 public class Constants {
 
-    public static final String action = "social.chat.whatsapp.fb.messenger.messaging.notificationreceiver";
     public static final String msgs = "msgs";
 
 }

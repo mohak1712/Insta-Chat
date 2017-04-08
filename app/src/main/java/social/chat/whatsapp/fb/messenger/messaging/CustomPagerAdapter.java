@@ -28,7 +28,6 @@ public class CustomPagerAdapter extends PagerAdapter {
     private Context mContext;
     private LinkedHashMap<String, ArrayList<Object>> data;
     private ArrayList<String> keys;
-    private ListAdapter adapter;
     private Clicked clickListner;
 
     public CustomPagerAdapter(Context mContext, LinkedHashMap<String, ArrayList<Object>> data, ArrayList<String> keys) {
@@ -46,9 +45,9 @@ public class CustomPagerAdapter extends PagerAdapter {
         RecyclerView recyclerView = (RecyclerView) layout.findViewById(R.id.list);
         recyclerView.setLayoutManager(new LinearLayoutManager(mContext));
 
-        adapter = new ListAdapter(data.get(keys.get(position)), mContext);
+        ListAdapter adapter = new ListAdapter(data.get(keys.get(position)), mContext);
         recyclerView.setAdapter(adapter);
-        recyclerView.setTag(position);
+        recyclerView.setTag(keys.get(position));
 
         final EditText editText = (EditText) layout.findViewById(R.id.text);
 
@@ -57,8 +56,12 @@ public class CustomPagerAdapter extends PagerAdapter {
             @Override
             public void onClick(View view) {
 
-                if (clickListner != null)
+                if (clickListner != null){
+
                     clickListner.itemClicked(position, editText.getText().toString());
+                    editText.getText().clear();
+                }
+
             }
         });
 
@@ -113,29 +116,6 @@ public class CustomPagerAdapter extends PagerAdapter {
     public boolean isViewFromObject(View view, Object object) {
         return view == object;
     }
-
-//    public void updateView(String key, ArrayList<NotificationModel> models) {
-//
-//        keys.add(key);
-//        data.put(key, models);
-//        notifyDataSetChanged();
-//        adapter = new ListAdapter(models,mContext);
-//
-//    }
-
-//    public void updatePager(LinkedHashMap<String, ArrayList<NotificationModel>> newData , ArrayList<String> newkey) {
-//
-//        if (data!=null && keys!=null){
-//
-//            keys.clear();
-//            data.clear();
-//
-//            keys.addAll(newkey);
-//            data.putAll(newData);
-//
-//            notifyDataSetChanged();
-//        }
-//    }
 
     public interface Clicked {
 

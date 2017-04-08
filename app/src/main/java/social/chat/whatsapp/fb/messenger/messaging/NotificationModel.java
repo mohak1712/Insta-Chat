@@ -11,6 +11,17 @@ import android.os.Parcelable;
 
 public class NotificationModel implements Parcelable {
 
+    public static final Creator<NotificationModel> CREATOR = new Creator<NotificationModel>() {
+        @Override
+        public NotificationModel createFromParcel(Parcel in) {
+            return new NotificationModel(in);
+        }
+
+        @Override
+        public NotificationModel[] newArray(int size) {
+            return new NotificationModel[size];
+        }
+    };
     private String group;
     private String userName;
     private String msg;
@@ -19,7 +30,6 @@ public class NotificationModel implements Parcelable {
 
     public NotificationModel() {
     }
-
 
     protected NotificationModel(Parcel in) {
         group = in.readString();
@@ -35,18 +45,6 @@ public class NotificationModel implements Parcelable {
         dest.writeString(msg);
         dest.writeLong(time);
     }
-
-    public static final Creator<NotificationModel> CREATOR = new Creator<NotificationModel>() {
-        @Override
-        public NotificationModel createFromParcel(Parcel in) {
-            return new NotificationModel(in);
-        }
-
-        @Override
-        public NotificationModel[] newArray(int size) {
-            return new NotificationModel[size];
-        }
-    };
 
     public String getGroup() {
         return group;
@@ -85,6 +83,8 @@ public class NotificationModel implements Parcelable {
     public int describeContents() {
         return 0;
     }
+
+
 }
 
 

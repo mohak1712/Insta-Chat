@@ -4,7 +4,7 @@ package social.chat.whatsapp.fb.messenger.messaging;
  * Created by mohak on 25/3/17.
  */
 
-public class reply {
+public class replyModel {
 
     private int pos;
     private String message;

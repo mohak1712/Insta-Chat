@@ -2,7 +2,6 @@ package social.chat.whatsapp.fb.messenger.messaging;
 
 import android.content.Intent;
 import android.graphics.Color;
-import android.media.Image;
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.text.SpannableString;
@@ -10,20 +9,15 @@ import android.text.Spanned;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.util.Patterns;
-import android.view.Gravity;
 import android.view.View;
-import android.webkit.URLUtil;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.amulyakhare.textdrawable.TextDrawable;
 
 import org.greenrobot.eventbus.EventBus;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.regex.Matcher;
 
 /**
@@ -53,14 +47,14 @@ public class DataHolder extends RecyclerView.ViewHolder {
 
 
         if (!notificationModel.getGroup().equals("-null_123"))
-            message.setText(notificationModel.getUserName() + " : \n" + notificationModel.getMsg());
+            message.setText(notificationModel.getUserName() + " :\n" + notificationModel.getMsg());
         else
             message.setText(notificationModel.getMsg());
 
         TextDrawable drawable;
 
         /* charAt(0) not working*/
-        if (notificationModel.getUserName().charAt(1) == '+')
+        if (notificationModel.getUserName().length() > 1 && notificationModel.getUserName().charAt(1) == '+')
             drawable = TextDrawable.builder()
                     .buildRound("U", Color.parseColor("#065E52"));
         else
@@ -75,9 +69,9 @@ public class DataHolder extends RecyclerView.ViewHolder {
     /**
      * bind reply message to recycler view
      *
-     * @param replymessage {@link reply} object
+     * @param replymessage {@link replyModel} object
      */
-    public void bindData2(reply replymessage) {
+    public void bindData2(replyModel replymessage) {
 
         message.setText(replymessage.getMessage());
         addClickToLinks(replymessage.getMessage());

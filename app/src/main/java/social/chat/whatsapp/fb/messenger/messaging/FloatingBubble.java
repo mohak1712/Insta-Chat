@@ -642,6 +642,9 @@ public class FloatingBubble extends Service implements CustomPagerAdapter.Clicke
         setClickListner();
 
         view_pager.getAdapter().notifyDataSetChanged();
+
+         /* Set the number of pages that should be retained to either side of the current page in the view hierarchy in an idle state.
+         * Pages beyond this limit will be recreated from the adapter when needed */
         view_pager.setOffscreenPageLimit(adapter.getCount());
 
         for (String key : keys) {

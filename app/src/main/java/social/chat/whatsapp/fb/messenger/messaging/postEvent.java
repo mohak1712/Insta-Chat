@@ -7,8 +7,13 @@ package social.chat.whatsapp.fb.messenger.messaging;
 
 public class postEvent {
 
-    public postEvent(){
+    String receiver;
+    int size;
 
-        // empty constructor
+    public postEvent(String s, int size) {
+
+        this.size = size;
+        receiver = s;
+
     }
 }

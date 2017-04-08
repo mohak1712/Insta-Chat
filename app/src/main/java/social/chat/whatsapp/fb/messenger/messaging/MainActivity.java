@@ -23,6 +23,10 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.crashlytics.android.Crashlytics;
+
+import io.fabric.sdk.android.Fabric;
+
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
@@ -36,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Fabric.with(this, new Crashlytics());
         setContentView(R.layout.activity_main);
 
         recyclerView = (RecyclerView) findViewById(R.id.appList);
@@ -47,10 +52,17 @@ public class MainActivity extends AppCompatActivity {
         data.add("Hangouts");
         data.add("Skype");
         data.add("Telegram");
-        data.add("Viber");
+        data.add("Line");
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(new AppListAdapter(this, data));
+
+        if (Settings.Secure.getInt(this.getContentResolver(),
+                Settings.Global.DEVELOPMENT_SETTINGS_ENABLED, 0) == 1)
+            githubAction.setVisibility(View.VISIBLE);
+        else
+            githubAction.setVisibility(View.GONE);
+
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this))
             overlayPermission();
@@ -64,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                showAlertBox("Developer ? \nHelp me maintain this project", "This project is open sourced on Github and I need your support to make it better.")
+                showAlertBox("Developer ? \nHelp me maintain this project", "This project is open sourced on GitHub and I need your support to make it better.")
                         .setPositiveButton("Show Project", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
@@ -98,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
      */
     private void readContactsPermission() {
 
-        showAlertBox("Read Contacts Permission Required", "Note - Your contacts are not stored. The app wont work without this permission.")
+        showAlertBox("Read Contacts Permission Required", "Note - Your contacts are not stored. App wont work without this permission.")
                 .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
@@ -132,7 +144,7 @@ public class MainActivity extends AppCompatActivity {
         if (enabled)
             return;
 
-        showAlertBox("Read Notification Permission Required", "This perm.. The app wont work without this permission")
+        showAlertBox("Read Notification Permission Required", "App wont work without this permission")
                 .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
@@ -159,7 +171,7 @@ public class MainActivity extends AppCompatActivity {
     @RequiresApi(api = Build.VERSION_CODES.M)
     private void overlayPermission() {
 
-        showAlertBox("Overlay Permission Required", "Overlay permission is required so that you can chat from anywhere. The app wont work without this permission.")
+        showAlertBox("Overlay Permission Required", "Overlay permission is required so that you can chat from anywhere.App wont work without this permission.")
                 .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
