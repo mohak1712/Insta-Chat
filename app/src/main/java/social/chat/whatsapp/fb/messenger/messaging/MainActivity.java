@@ -19,8 +19,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Html;
+import android.text.method.LinkMovementMethod;
+import android.text.util.Linkify;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
@@ -37,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
     FloatingActionButton githubAction;
     ImageView rateapp;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
         recyclerView = (RecyclerView) findViewById(R.id.appList);
         githubAction = (FloatingActionButton) findViewById(R.id.github);
         rateapp = (ImageView) findViewById(R.id.rate);
+
 
         data = new ArrayList<>();
         data.add("WhatsApp");
@@ -63,14 +69,14 @@ public class MainActivity extends AppCompatActivity {
         else
             githubAction.setVisibility(View.GONE);
 
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this))
-            overlayPermission();
-
         notificationPermission();
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_DENIED)
             readContactsPermission();
+
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this))
+            overlayPermission();
 
         githubAction.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -103,6 +109,9 @@ public class MainActivity extends AppCompatActivity {
                 rateOnPlayStore();
             }
         });
+
+
+
     }
 
     /**
