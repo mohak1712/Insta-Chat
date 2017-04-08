@@ -36,3 +36,11 @@ Use floating chatHeads bubbles like in facebook for whatsapp, telegram and other
 1. [EventBus](https://github.com/greenrobot/EventBus)
 1. [CircleImageView](https://github.com/hdodenhof/CircleImageView)
 1. [TextDrawable](https://github.com/amulyakhare/TextDrawable)
+
+## SCREENSHOTS -
+
+![screenshot_2017-04-08-13-28-16](https://cloud.githubusercontent.com/assets/12782512/24827089/cec76098-1c61-11e7-930f-03cdacbf6197.jpg)
+![screenshot_2017-04-08-13-27-19](https://cloud.githubusercontent.com/assets/12782512/24827087/cbe8dadc-1c61-11e7-8f27-638de0910d41.jpg)
+![screenshot_2017-04-08-13-24-18](https://cloud.githubusercontent.com/assets/12782512/24827081/c261a4bc-1c61-11e7-8fbe-9104cba9f0da.jpg)
+![screenshot_2017-04-08-13-26-13](https://cloud.githubusercontent.com/assets/12782512/24827085/c639ef54-1c61-11e7-97be-6caef87b057c.jpg)
+![screenshot_2017-04-08-13-27-04](https://cloud.githubusercontent.com/assets/12782512/24827086/c90a6448-1c61-11e7-805c-47bf1e58ccc0.jpg)
