@@ -2,12 +2,14 @@
 
 InstaChat offers a revolutionary way to read messages of your favourite messengers. It overlays every other app and you can reply from anywhere you want.
 Sometimes you did not want to quit your current app but also need to read some important messages or reply to them. Thats the point where InstaChat will help you.
-Use floating chatHeads bubbles like in facebook for whatsapp, telegram and others!
+Use floating chatHeads bubbles like in Facebook for Whatsapp, Telegram and others!
+
+[Play Store Link](https://play.google.com/store/apps/details?id=social.chat.whatsapp.fb.messenger.messaging)
 
 ## Features
 
 1. **Read messages from anywhere**
-1. **Reply to messages from aywhere**
+1. **Reply to messages from anywhere**
 1. **Separate notifications for every contact**
 1. **Chat heads notification to write messages at any time**
 
@@ -39,8 +41,8 @@ Use floating chatHeads bubbles like in facebook for whatsapp, telegram and other
 
 ## SCREENSHOTS -
 
-![screenshot_2017-04-08-13-28-16](https://cloud.githubusercontent.com/assets/12782512/24827089/cec76098-1c61-11e7-930f-03cdacbf6197.jpg)
-![screenshot_2017-04-08-13-27-19](https://cloud.githubusercontent.com/assets/12782512/24827087/cbe8dadc-1c61-11e7-8f27-638de0910d41.jpg)
-![screenshot_2017-04-08-13-24-18](https://cloud.githubusercontent.com/assets/12782512/24827081/c261a4bc-1c61-11e7-8fbe-9104cba9f0da.jpg)
-![screenshot_2017-04-08-13-26-13](https://cloud.githubusercontent.com/assets/12782512/24827085/c639ef54-1c61-11e7-97be-6caef87b057c.jpg)
-![screenshot_2017-04-08-13-27-04](https://cloud.githubusercontent.com/assets/12782512/24827086/c90a6448-1c61-11e7-805c-47bf1e58ccc0.jpg)
+![s2](https://cloud.githubusercontent.com/assets/12782512/24828687/1c77190a-1c80-11e7-9389-d05f2efc91a0.jpg)
+![s3](https://cloud.githubusercontent.com/assets/12782512/24828688/1cc13c38-1c80-11e7-9b47-011fc6e5131f.jpg)
+![s4](https://cloud.githubusercontent.com/assets/12782512/24828689/1eb46894-1c80-11e7-9b4c-a63945be0ee8.jpg)
+![screenshot_2017-04-08-12-35-50](https://cloud.githubusercontent.com/assets/12782512/24828692/235b2072-1c80-11e7-9b13-74fdbce501fb.jpg)
+![s5](https://cloud.githubusercontent.com/assets/12782512/24828690/213c365a-1c80-11e7-812d-d96911170f2a.jpg)
