@@ -16,13 +16,16 @@
             android:scaleType="centerCrop"
             android:src="@drawable/whatsapp" />
 
-        <View
+        <TextView
             android:id="@+id/newmessage"
-            android:layout_width="15dp"
-            android:layout_height="15dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_gravity="end"
-            android:layout_marginTop="5dp"
-            android:background="@drawable/circle" />
+            android:layout_marginTop="3dp"
+            android:background="@drawable/circle"
+            android:gravity="center"
+            android:padding="2dp"
+            android:textColor="#fff" />
 
     </FrameLayout>
 
@@ -36,22 +39,22 @@
 
 
         <TextView
+            android:id="@+id/whatsapp"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:gravity="center"
             android:paddingEnd="10dp"
             android:paddingStart="10dp"
             android:text="WhatsApp"
-            android:id="@+id/whatsapp"
             android:textColor="@android:color/white"
             android:textSize="20sp" />
 
         <ImageView
+            android:id="@+id/openWhatsapp"
             android:layout_width="20dp"
             android:layout_height="20dp"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
-            android:id="@+id/openWhatsapp"
             android:layout_marginEnd="10dp"
             android:src="@drawable/open_whatsapp"/>
 
