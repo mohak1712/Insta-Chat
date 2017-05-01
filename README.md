@@ -4,7 +4,8 @@ InstaChat offers a revolutionary way to read messages of your favourite messenge
 Sometimes you did not want to quit your current app but also need to read some important messages or reply to them. Thats the point where InstaChat will help you.
 Use floating chatHeads bubbles like in Facebook for Whatsapp, Telegram and others!
 
-[Play Store Link](https://play.google.com/store/apps/details?id=social.chat.whatsapp.fb.messenger.messaging)
+[![Get it on Google Play](http://i.imgur.com/7sq06lr.png)](https://play.google.com/store/apps/details?id=social.chat.whatsapp.fb.messenger.messaging)
+
 
 ## Features
 
