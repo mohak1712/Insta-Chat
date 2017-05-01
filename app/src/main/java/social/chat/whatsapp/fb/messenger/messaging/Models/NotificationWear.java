@@ -1,4 +1,4 @@
-package social.chat.whatsapp.fb.messenger.messaging;
+package social.chat.whatsapp.fb.messenger.messaging.Models;
 
 import android.app.PendingIntent;
 import android.os.Bundle;

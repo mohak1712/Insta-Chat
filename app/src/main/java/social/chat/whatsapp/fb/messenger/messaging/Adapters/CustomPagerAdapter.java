@@ -1,4 +1,4 @@
-package social.chat.whatsapp.fb.messenger.messaging;
+package social.chat.whatsapp.fb.messenger.messaging.Adapters;
 
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -12,10 +12,10 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
 
-import org.greenrobot.eventbus.EventBus;
-
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+
+import social.chat.whatsapp.fb.messenger.messaging.R;
 
 import static android.content.Context.CLIPBOARD_SERVICE;
 

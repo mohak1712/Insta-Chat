@@ -1,6 +1,10 @@
-package social.chat.whatsapp.fb.messenger.messaging;
+package social.chat.whatsapp.fb.messenger.messaging.Events;
 
 import java.util.ArrayList;
+
+import social.chat.whatsapp.fb.messenger.messaging.FloatingBubble;
+import social.chat.whatsapp.fb.messenger.messaging.Models.NotificationModel;
+import social.chat.whatsapp.fb.messenger.messaging.NotificationReader;
 
 /**
  * Created by mohak on 24/3/17.
@@ -9,7 +13,7 @@ import java.util.ArrayList;
 
 public class postNotificationData {
 
-    ArrayList<NotificationModel> msgs;
+    public ArrayList<NotificationModel> msgs;
     public postNotificationData(ArrayList<NotificationModel> msgs){
 
         this.msgs=msgs;

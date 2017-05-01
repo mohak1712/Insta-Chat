@@ -1,19 +1,18 @@
-package social.chat.whatsapp.fb.messenger.messaging;
+package social.chat.whatsapp.fb.messenger.messaging.Adapters;
 
 import android.content.Context;
 import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.amulyakhare.textdrawable.TextDrawable;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
+
+import social.chat.whatsapp.fb.messenger.messaging.ViewHolder.AppListHolder;
+import social.chat.whatsapp.fb.messenger.messaging.R;
 
 /**
  * Created by mohak on 7/3/17.

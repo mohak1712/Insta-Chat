@@ -1,4 +1,4 @@
-package social.chat.whatsapp.fb.messenger.messaging;
+package social.chat.whatsapp.fb.messenger.messaging.ViewHolder;
 
 import android.content.Intent;
 import android.graphics.Color;
@@ -19,6 +19,11 @@ import com.amulyakhare.textdrawable.TextDrawable;
 import org.greenrobot.eventbus.EventBus;
 
 import java.util.regex.Matcher;
+
+import social.chat.whatsapp.fb.messenger.messaging.Events.closeBubbleEvent;
+import social.chat.whatsapp.fb.messenger.messaging.Models.replyModel;
+import social.chat.whatsapp.fb.messenger.messaging.Models.NotificationModel;
+import social.chat.whatsapp.fb.messenger.messaging.R;
 
 /**
  * Created by mohak on 7/3/17.
@@ -85,6 +90,7 @@ public class DataHolder extends RecyclerView.ViewHolder {
      * @param text message text
      */
     public void addClickToLinks(String text) {
+
 
         SpannableString ss = new SpannableString(text);
         Matcher m = Patterns.WEB_URL.matcher(text);

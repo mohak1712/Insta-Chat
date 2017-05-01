@@ -1,4 +1,4 @@
-package social.chat.whatsapp.fb.messenger.messaging;
+package social.chat.whatsapp.fb.messenger.messaging.Adapters;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
@@ -10,6 +10,11 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+
+import social.chat.whatsapp.fb.messenger.messaging.Models.replyModel;
+import social.chat.whatsapp.fb.messenger.messaging.Models.NotificationModel;
+import social.chat.whatsapp.fb.messenger.messaging.R;
+import social.chat.whatsapp.fb.messenger.messaging.ViewHolder.DataHolder;
 
 /**
  * Created by mohak on 7/3/17.
@@ -97,6 +102,12 @@ public class ListAdapter extends RecyclerView.Adapter<DataHolder> {
     @Override
     public int getItemCount() {
         return data.size();
+    }
+
+
+    public ArrayList<Object> getData(){
+
+        return data;
     }
 
 

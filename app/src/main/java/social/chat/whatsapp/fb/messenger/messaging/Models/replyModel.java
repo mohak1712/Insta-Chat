@@ -1,4 +1,4 @@
-package social.chat.whatsapp.fb.messenger.messaging;
+package social.chat.whatsapp.fb.messenger.messaging.Models;
 
 /**
  * Created by mohak on 25/3/17.
@@ -31,7 +31,7 @@ public class replyModel {
         return pos;
     }
 
-    void setPos(int pos) {
+    public void setPos(int pos) {
         this.pos = pos;
     }
 
@@ -39,7 +39,7 @@ public class replyModel {
         return message;
     }
 
-    void setMessage(String message) {
+    public void setMessage(String message) {
         this.message = message;
     }
 }

@@ -1,4 +1,4 @@
-package social.chat.whatsapp.fb.messenger.messaging;
+package social.chat.whatsapp.fb.messenger.messaging.ViewHolder;
 
 
 import android.support.v7.widget.RecyclerView;
@@ -7,15 +7,17 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import social.chat.whatsapp.fb.messenger.messaging.R;
+
 /**
  * Created by mohak on 13/3/17.
  */
 public class AppListHolder extends RecyclerView.ViewHolder {
 
-    TextView name;
-    ImageView icon;
-    LinearLayout linearLayout;
-    TextView comingSoon;
+    public TextView name;
+    public ImageView icon;
+    public LinearLayout linearLayout;
+    public TextView comingSoon;
 
     public AppListHolder(View view) {
         super(view);

@@ -1,7 +1,5 @@
-package social.chat.whatsapp.fb.messenger.messaging;
+package social.chat.whatsapp.fb.messenger.messaging.Models;
 
-import android.app.PendingIntent;
-import android.graphics.Bitmap;
 import android.os.Parcel;
 import android.os.Parcelable;
 
